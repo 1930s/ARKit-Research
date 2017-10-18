@@ -1,0 +1,136 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>ARKit Samples</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" href="assets/css/main.css" />
+        <link rel="stylesheet" href="assets/css/custom.css" />
+		<!--[if lte IE 9]><link rel="stylesheet" href="assets/css/ie9.css" /><![endif]-->
+		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+	</head>
+	<body>
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<strong>ARKit Samples</strong>
+								</header>
+
+							<!-- Banner -->
+								<section id="banner">
+									<div class="content">
+										<header>
+											<h1>ARKit Sample Applications</h1>
+										</header>
+										<p>The following sample applications each illustrate a particular ARKit feature.
+											<a href="https://github.com/olucurious/Awesome-ARKit">Awesome ARKit</a> is a repository featuring many existing ARKit projects, each displaying a particular ARKit feature.</p>
+										<ul class="actions">
+											<li><a href="https://github.com/olucurious/Awesome-ARKit" class="button big">Visit Awesome ARKit</a></li>
+										</ul>
+									</div>
+									<span class="image object">
+										<img src="images/awesome-arkit.png" alt="" />
+									</span>
+								</section>
+
+							<!-- Section -->
+								<section>
+									<header class="major">
+										<h2>Sample Applications</h2>
+									</header>
+									<div class="features">
+										<article>
+											<span class="image bullet">
+                                                <img src="images/floorislava.png" width="100" />
+                                            </span>
+											<div class="content">
+                                                <h3><a href="https://github.com/arirawr/ARKit-FloorIsLava">ARKit-FloorIsLava</a></h3>
+                                                <p>FloorIsLava demonstrates ARKit's <b>horizontal plane detection</b> feature by finding horizontal planes and applying a lava-like texture.</p>
+											</div>
+										</article>
+                                        <article>
+											<span class="image bullet">
+                                                <img src="images/aruler.gif" width="100" />
+                                            </span>
+                                            <div class="content">
+                                                <h3><a href="https://github.com/duzexu/ARuler">ARuler</a></h3>
+                                                <p>ARuler uses ARKit's <b>feature points</b> detection. After detecting a horizontal plane, ARKit analyzes the surface and begins tracking distinct locations (feature points). It then uses these locations to continue tracking the current plane.</p>
+                                                <p>Under the right conditions, ARuler can accurately measure distance within a few centimeters.</p>
+                                            </div>
+                                        </article>
+                                        <article>
+											<span class="image bullet">
+                                                <img src="images/boxify.jpg" width="100" />
+                                            </span>
+                                            <div class="content">
+                                                <h3><a href="https://github.com/alunbestor/Boxify">Boxify</a></h3>
+                                                <p>Boxify uses ARKit's <b>SpriteKit integration</b> to add virtual 3D boxes into the ARKit scene.</p>
+                                                <p>These virtual boxes are managed by SpriteKit's physics engine: boxes obey gravity and collision detection lets the boxes interact with each other in a realistic fashion.</p>
+                                            </div>
+                                        </article>
+                                        <article>
+											<span class="image bullet">
+                                                <img src="images/ARPaint.png" width="100" />
+                                            </span>
+                                        <div class="content">
+                                            <h3><a href="https://github.com/oabdelkarim/ARPaint">ARPaint</a></h3>
+                                            <p>ARPaint features ARKit's <b>object tracking</b> capabilities. By specifying a point on the screen to track, ARPaint allows the user to paint in thin air by tracking the user's hand, a pen, or any object specified.</p>
+                                        </div>
+                                    </article>
+                                        <article>
+											<span class="image bullet">
+                                                <img src="images/corelocation.gif" width="100" />
+                                            </span>
+                                            <div class="content">
+                                                <h3><a href="https://github.com/ProjectDent/ARKit-CoreLocation">ARKit-CoreLocation</a></h3>
+                                                <p>ARKit-CoreLocation "Combines the high accuracy of AR with the scale of GPS data."</p>
+                                                <p>By integrating data from the device's <b>CoreLocation</b> sensors, ARKit-CoreLocation allows the device to place items in the "AR world" using real-world coordinates and improve location accuracy.</p>
+                                                <p>It should be noted that this particular project is in very early development, however it demonstrates a unique capability of ARKit paired with other APIs.</p>
+                                            </div>
+                                        </article>
+                                        <article>
+											<span class="image bullet">
+                                                <img src="images/core-ml.gif" width="100" />
+                                            </span>
+                                            <div class="content">
+                                                <h3><a href="https://github.com/hanleyweng/CoreML-in-ARKit">CoreML-in-ARKit</a></h3>
+                                                <p>CoreML-in-ARKit uses a <b>machine learning</b> model to detect objects through the device's camera and uses <b>object tracking</b> to display 3D labels on top of the recognized objects.</p>
+                                                <p>This project is another example of ARKit's extensibility and
+                                            </div>
+                                        </article>
+
+									</div>
+								</section>
+                </div>
+			</div>
+
+                <div id="sidebar"></div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/skel.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+			<script src="assets/js/main.js"></script>
+                        <!-- Load sidebar from server -->
+                        <script>
+                            $(function () {
+                                $("#sidebar").load("template/sidebar.html");
+                            })
+                        </script>
+
+	</body>
+</html>
