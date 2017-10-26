@@ -34,7 +34,7 @@
 
             <!-- Header -->
             <header id="header">
-                <a href="" class="logo">Tutorial: SceneKit Models and Physics</a>
+                <h2><a href="" class="logo">Tutorial: SceneKit Models and Physics</a></h2>
             </header>
 
             <br />
@@ -43,6 +43,7 @@
             <br />
             <h3>Learning Objectives</h3>
             <ul>
+                <li>How to perform a hit test to determine plane collision</li>
                 <li>How to render a 3D SceneKit model in ARKit</li>
                 <li>How to apply physics to SceneKit models</li>
             </ul>
@@ -79,12 +80,208 @@
                 <li>Delete everything inside the art.scnassets folder. <br><img src="../common-images/art.png" width="70%"/></li>
             </ol>
 
-            <p>Create a new AR Session using the technique learned in the <a href="../arkit-hello-world/tutorial.html">ARKit Hello World tutorial</a>.</p>
+            <p>Create a new AR Session using the technique learned in the <a href="../arkit-hello-world/tutorial.html">ARKit Hello World tutorial</a>. Follow the tutorial steps in order to start dynamically tracking horizontal planes. The rest of the tutorial assumes you have followed these steps.</p>
 
+            <h3>Performing a Hit Test</h3>
+            <p>When the user taps the screen in an AR application, ARKit records the 2D coordinates of the touch. In order to convert the 2D coordinates of the touch to real-world 3D coordinates, ARKit performs a "hit test." This test works as if the user's touch had fired a vector from the device's camera's origin through a 3D point created by projecting the 2D touch point into the 3D view. This 3D point is recorded.</p>
+            <p>If the 3D point lies on a detected horizontal plane, the hit test is a success. In this tutorial, we will use hit testing to allow the user to place 3D cubes in AR.</p>
+            <p>To create a hit test routine, first create a Tap Gesture Recognizer by opening your Main.storyboard and searching the Object library. Drag the Tap Gesture Recognizer object into your ViewController's Scene View. Your View Controller Scene should now look like this:</p>
+            <img src="images/tap-gesture-recognizer.png" />
+            <p>Next, open the Assistant Editor to your Main.storyboard and your ViewController.swift. Implement an action method that will be called when the Tap Gesture Recognizer is recognized.</p>
+            <p>Copy the documented code given below. <b>Carefully study the code, understand what it is doing, and learn from it!</b></p>
+            <pre><code>
+// MARK: - Gesture Handling Action methods
+
+@IBAction func userTappedScreen(_ sender: UITapGestureRecognizer) {
+    // Get the 2D point of the touch in the SceneView
+    let tapPoint: CGPoint = sender.location(in: self.sceneView)
+
+    // Conduct the hit test on the SceneView
+    let hitTestResults: [ARHitTestResult] = sceneView.hitTest(tapPoint, types: .existingPlaneUsingExtent)
+
+    if hitTestResults.isEmpty {
+        return
+    }
+
+    // Arbitrarily pick the closest plane in the case of multiple results
+    let result: ARHitTestResult = hitTestResults[0]
+
+    // The position of the ARHitTestResult relative to the world coordinate system
+    // The 3rd column in the matrix corresponds the the position of the point in the coordinate system
+    let resultPositionMatrixColumn = result.worldTransform.columns.3
+
+    // Position the node slightly above the hit test's position in order to show off gravity later
+    let targetPosition: SCNVector3 = SCNVector3Make(resultPositionMatrixColumn.x, resultPositionMatrixColumn.y + /* insertion offset of ~50 cm */ 0.5, resultPositionMatrixColumn.z)
+
+    // This method is implemented in the next section of the tutorial.
+    addCubeAt(targetPosition)
+}
+            </code></pre>
+            <p>Connect your action method to the gesture recognizer by holding the control key and dragging from the Tap Gesture Recognizer to your action method.</p>
             <h3>Adding 3D Virtual Content</h3>
+            <p>In SceneKit, <a href="https://developer.apple.com/documentation/scenekit/scngeometry">SCNGeometry</a> objects can be attached to the previously-seen SCNNode objects to create realistic visuals. One of the simplest Geometry types is the <a href="https://developer.apple.com/documentation/scenekit/scnbox#relationships">SCNBox</a> object: a "six-sided polyhedron geometry whose whose faces are all rectangles, optionally with rounded edges and corners." Basically, a cube.</p>
+            <p>To create a SCNBox, you must define the shape in terms of its width, height, and length. You must then apply the SCNBox to a SCNNode wrapper and place the SCNNode in the sceneView.</p>
+            <p>Copy the documented code given below. <b>Carefully study the code, understand what it is doing, and learn from it!</b></p>
+            <pre><code>
+// Adds a cube to the sceneView at the given position
+func addCubeAt(_ position: SCNVector3) {
+    // .01 = roughly 10cm
+    let cubeGeometry: SCNBox = SCNBox.init(
+        width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0)
 
-            <h3>Hit Testing</h3>
+    // Node that the geometry is applied to
+    let cubeNode = SCNNode.init(geometry: cubeGeometry)
+    cubeNode.position = position
+
+    // Add the node to the scene
+    sceneView.scene.rootNode.addChildNode(cubeNode)
+
+    sceneView.autoenablesDefaultLighting = true
+}
+            </code></pre>
+            <p>Now build and launch your application. Find a horizontal plane, and once it's detected, tap the screen and a cube will appear! </p>
+            <div align="center">
+                <img src="images/cube-addition.PNG" width="30%" />
+            </div>
+
             <h3>Physics Engine</h3>
+            <p>SceneKit includes a realistic physics engine that "performs physics calculations on physics bodies attached to nodes in the scene." To tell SceneKit that it should apply physics to an object, you must attach a <a href="https://developer.apple.com/documentation/scenekit/scnphysicsbody">SCNPhysicsBody</a> to your object.</p>
+            <p>Add the following code to your <code>addCubeAt()</code> method.</p>
+            <pre><code>
+// Add Physics Body to the cube
+let physicsBody: SCNPhysicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.dynamic, shape: nil)
+physicsBody.mass = 2.0; // 2kg
+cubeNode.physicsBody = physicsBody
+            </code></pre>
+            <p>Now your cubes will obey gravity, but they'll fall forever! In order to prevent this, you must set up collision detection.</p>
+            <h3>Collision Detection</h3>
+            <p>In order to have objects collide instead of pass through each other, each object must have a <a href="https://developer.apple.com/documentation/scenekit/scnphysicsbody">SCNPhysicsBody</a> attached to it.</p>
+            <p>Add this following lines to your <code>addCubeAt()</code> method in order to give your cubes their physics bodies</p>
+            <pre><code>
+// Add Physics Body to the cube
+let physicsBody: SCNPhysicsBody = SCNPhysicsBody(type: .dynamic, shape: SCNPhysicsShape(geometry: cubeGeometry, options: nil))
+physicsBody.mass = 1.5; // 1.5kg
+physicsBody.restitution = 0.25
+physicsBody.friction = 0.75
+cubeNode.physicsBody = physicsBody
+            </code></pre>
+            <p>Next, create a helper function to give your planes their physics bodies. This function will be used when the renderer detects a new plane and when it updates its size estimation of existing planes. <b>Carefully study the code, understand what it is doing, and learn from it!</b></p>
+            <pre><code>
+/**
+ Creates a new physics body for a plane SCNNode
+ */
+func createPlanePhysicsBody(forNode: SCNNode, anchor: ARPlaneAnchor) {
+    // Create a SCNBox the size of the plane, but 1cm high to prevent the cubes from clipping. SCNPlane has no height, so it is easily clipped through.
+    let planeGeometry = SCNBox(width: CGFloat(anchor.extent.x) , height: CGFloat(anchor.extent.z), length: 0.005, chamferRadius: 0)
+
+    // Give the plane a kinematic physics body so other nodes can interact with it, but it never moves and is unaffected by collisions
+    let physicsBody: SCNPhysicsBody = SCNPhysicsBody(type: .kinematic, shape: SCNPhysicsShape(geometry: planeGeometry, options: nil))
+
+    physicsBody.restitution = 0.0
+    physicsBody.friction = 1.0
+    forNode.physicsBody = physicsBody
+}
+            </code></pre>
+            <p>Update your <code>renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor)</code> method to give your planes a physics body for the cubes to interact with. <b>Carefully study the code, understand what it is doing, and learn from it!</b></p>
+            <pre><code>
+/**
+ Called when a new node is mapped to the passed in anchor
+ */
+func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
+    // Place content only for anchors found by plane detection.
+    guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
+
+    // Create a SceneKit plane to visualize the plane anchor using its position and extent.
+    let plane = SCNPlane(width: CGFloat(planeAnchor.extent.x), height: CGFloat(planeAnchor.extent.z))
+    let planeNode = SCNNode(geometry: plane)
+    planeNode.simdPosition = float3(planeAnchor.center.x, 0, planeAnchor.center.z)
+
+    // Give the SCNNode a texture from Assets.xcassets to better visualize the detected plane.
+    planeNode.geometry?.firstMaterial?.diffuse.contents = "grid.png" // NOTE: change this string to the name of the file you added
+
+    createPlanePhysicsBody(forNode: planeNode, anchor: planeAnchor)
+
+    /*
+     `SCNPlane` is vertically oriented in its local coordinate space, so
+     rotate the plane to match the horizontal orientation of `ARPlaneAnchor`.
+     */
+    planeNode.eulerAngles.x = -.pi / 2
+
+    // Make the plane visualization semitransparent to clearly show real-world placement.
+    planeNode.opacity = 0.25
+
+    /*
+     Add the plane visualization to the ARKit-managed node so that it tracks
+     changes in the plane anchor as plane estimation continues.
+     */
+    node.addChildNode(planeNode)
+}
+            </code></pre>
+            <p>In addition, update the node's physics body when the plane estimation is updated in <code>func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor)</code>. <b>Carefully study the code, understand what it is doing, and learn from it!</b></p>
+            <pre><code>
+/**
+ Called when the renderer updates its estimation of an existing node.
+ */
+func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
+    // Update content only for plane anchors and nodes matching the setup created in `renderer(_:didAdd:for:)`.
+    guard let planeAnchor = anchor as?  ARPlaneAnchor,
+        let planeNode = node.childNodes.first,
+        let plane = planeNode.geometry as? SCNPlane
+        else { return }
+
+    // Plane estimation may shift the center of a plane relative to its anchor's transform.
+    planeNode.simdPosition = float3(planeAnchor.center.x, 0, planeAnchor.center.z)
+
+    /*
+     Plane estimation may extend the size of the plane, or combine previously detected
+     planes into a larger one. In the latter case, `ARSCNView` automatically deletes the
+     corresponding node for one plane, then calls this method to update the size of
+     the remaining plane.
+     */
+    plane.width = CGFloat(planeAnchor.extent.x)
+    plane.height = CGFloat(planeAnchor.extent.z)
+
+    // Update the plane's physicsBody
+    createPlanePhysicsBody(forNode: planeNode, anchor: planeAnchor)
+}
+            </code></pre>
+            <p>Your cubes will now interact with the planes and each other!</p>
+                <div align="center">
+            <img src="images/collision.PNG" width="70%" />
+            </div>
+            <br />
+            <h3>Saving Memory</h3>
+            <p>You may have noticed in your testing that if a cube falls off of a plane, it seems to fall forever. Even after the cube is long out of sight, it is still in memory, and the physics engine still includes it in calculations every frame. This is undesirable, as if the user adds too many cubes, the device can run out of memory.</p>
+            <p>To prevent this, you can place a giant, invisible plane at the "bottom" of the world (think slightly below the ground). You can use a bitmask to detect which nodes collide, and if a cube collides with the bottom plane, you can remove it from memory to save resources.</p>
+            <p>To check which nodes are colliding, we will bitwise-AND each node's collision bit mask together and check the result against the two bitmasks bitwise-OR-ed together. Add the following two bitmasks below your class declaration.</p>
+            <pre><code>
+let bottomCollisionBitMask = 1 << 0 // 001 = 1
+let cubeCollisionBitMask = 1 << 1   // 010 = 2
+            </code></pre>
+            <p>Add these bitmasks to your objects. In <code>setupWorldBottom()</code> add </p>
+            <pre><code>physicsBody.categoryBitMask = bottomCollisionBitMask</code></pre>
+            <p>and in <code>addCubeAt()</code> add </p>
+            <pre><code>physicsBody.categoryBitMask = cubeCollisionBitMask</code></pre>
+            <p>To use these bitmasks, the viewcontroller must implement the <a href="https://developer.apple.com/documentation/scenekit/scnphysicscontactdelegate">SCNPhysicsContactDelegate</a> methods. Add the SCNPhysicsContactDelegate to your class declaration and implement the following function: </p>
+            <pre><code>
+ // MARK: - SCNPhysicsContactDelegate
+
+/**
+ Tests if the cube collided with the bottom plane and removes it if true
+ */
+func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
+    let mask = contact.nodeA.physicsBody!.categoryBitMask | contact.nodeB.physicsBody!.categoryBitMask
+
+    if mask == [bottomCollisionBitMask, cubeCollisionBitMask] {
+        if contact.nodeA.physicsBody!.categoryBitMask == CollisionTypes.bottom.rawValue {
+            contact.nodeB.removeFromParentNode()
+        } else {
+            contact.nodeA.removeFromParentNode()
+        }
+    }
+}
+            </code></pre>
+            <p>Congratulations! You have completed the tutorial, and your implementation is now memory-efficient!git </p>
 
         </div>
     </div>
