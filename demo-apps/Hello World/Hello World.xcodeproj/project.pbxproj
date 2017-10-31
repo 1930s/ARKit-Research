@@ -99,11 +99,11 @@
 		B8A867DF1F8420B80029394A /* Hello World */ = {
 			isa = PBXGroup;
 			children = (
+				B8A867E91F8420B80029394A /* Assets.xcassets */,
 				B8A867E01F8420B80029394A /* AppDelegate.swift */,
 				B8A867E21F8420B80029394A /* art.scnassets */,
 				B8A867E41F8420B80029394A /* ViewController.swift */,
 				B8A867E61F8420B80029394A /* Main.storyboard */,
-				B8A867E91F8420B80029394A /* Assets.xcassets */,
 				B8A867EB1F8420B80029394A /* LaunchScreen.storyboard */,
 				B8A867EE1F8420B80029394A /* Info.plist */,
 			);

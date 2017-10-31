@@ -145,8 +145,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, SCNPhysicsContactDele
     func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact) {
         let mask = contact.nodeA.physicsBody!.categoryBitMask | contact.nodeB.physicsBody!.categoryBitMask
         
-        if mask == [bottomCollisionBitMask, cubeCollisionBitMask] {
-            if contact.nodeA.physicsBody!.categoryBitMask == CollisionTypes.bottom.rawValue {
+        if mask == bottomCollisionBitMask || mask == cubeCollisionBitMask {
+            if contact.nodeA.physicsBody!.categoryBitMask == bottomCollisionBitMask {
                 contact.nodeB.removeFromParentNode()
             } else {
                 contact.nodeA.removeFromParentNode()
