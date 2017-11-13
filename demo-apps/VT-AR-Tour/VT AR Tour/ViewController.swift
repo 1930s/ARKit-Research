@@ -21,6 +21,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     // JSON read from the Document directory
     var jsonInDocumentDirectory: Data? = nil
     
+    var buildingLocationNodes: [SCNNode]? = nil
+    
     let vtBuildingsWSBaseUrl: String = "http://orca.cs.vt.edu/VTBuildingsJAX-RS/webresources/vtBuildings"
     
     override func viewDidLoad() {
@@ -144,13 +146,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                     if (jsonInDocumentDirectory == nil) {
                         // Save the data we just downloaded from the API
                         writeJsonDataToDocumentDirectory(jsonData: jsonDataFromApi, jsonFileName: "VTBuildings.plist")
-                        print("saved the json data")
-                    } else {
-                        print(jsonInDocumentDirectory)
-                        print("didn't save cache unnecessarily")
                     }
                     
                     let jsonArray = try JSONSerialization.jsonObject(with: jsonDataFromApi, options: .mutableContainers) as! NSArray
+                    
+                    if buildingLocationNodes == nil {
+                        buildingLocationNodes = [SCNNode]()
+                    }
                     
                     // TODO remove: example building
                     // -----------------------------------------------------------------
@@ -160,11 +162,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                     testBuilding["longitude"] = -80.423771
                     testBuilding["name"] = "The Edge Apartments"
                     // -----------------------------------------------------------------
-                    
                     // Loop through each building in the response
                     for building in jsonArray {
                         let buildingDict = building as! NSMutableDictionary
-                        
                         let buildingLocation: CLLocation = CLLocation(latitude: buildingDict["latitude"]! as! CLLocationDegrees, longitude: buildingDict["longitude"]! as! CLLocationDegrees)
                         
                         // Compute the distance between the user's current location and the building's location
@@ -179,10 +179,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         let labelGeometry = SCNText()
                         labelGeometry.string = buildingDict.value(forKey: "name")
                         let labelNode = SCNNode(geometry: labelGeometry)
+                        let buildingName: String = buildingDict.value(forKey: "name") as! String
+                        labelNode.name = buildingName
                         labelNode.position = targetPosition
                         
-                        // Add the node to the scene
-                        sceneView.scene.rootNode.addChildNode(labelNode)
+                        // Only add the building label if it doesn't already exist
+                        let buildingLabelNode = sceneView.scene.rootNode.childNode(withName: buildingName , recursively: false)
+                        if (buildingLabelNode == nil) {
+                            // Add the node to the scene
+                            sceneView.scene.rootNode.addChildNode(labelNode)
+                        }
                     }
 
                     // Sort the array of buildings
@@ -215,8 +221,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                 return jsonInDocumentDirectory
             } else {
                 // Reading cached data failed; download JSON data from the API in a single thread
-                return try Data(contentsOf: URL(string: vtBuildingsWSBaseUrl)!, options: NSData.ReadingOptions.dataReadingMapped)
                 print("had to download json data")
+                return try Data(contentsOf: URL(string: vtBuildingsWSBaseUrl)!, options: NSData.ReadingOptions.dataReadingMapped)
             }
         } catch let error as NSError {
             showAlertMessage(title: "HTTP error", message: "Error getting VT Building data from the server: \(error.localizedDescription)")
