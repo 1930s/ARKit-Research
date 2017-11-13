@@ -143,11 +143,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             if let jsonDataFromApi = jsonInDocumentDirectory {
                 // Getting the JSON was successful
                 do {
-                    if (jsonInDocumentDirectory == nil) {
-                        // Save the data we just downloaded from the API
-                        writeJsonDataToDocumentDirectory(jsonData: jsonDataFromApi, jsonFileName: "VTBuildings.plist")
-                    }
-                    
                     let jsonArray = try JSONSerialization.jsonObject(with: jsonDataFromApi, options: .mutableContainers) as! NSArray
                     
                     if buildingLocationNodes == nil {
@@ -176,6 +171,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         let buildARLocationPositionColumn = buildingARLocation.columns.3
                         let targetPosition: SCNVector3 = SCNVector3Make(buildARLocationPositionColumn.x, buildARLocationPositionColumn.y /* + vertical offset would go here */, buildARLocationPositionColumn.z)
                         
+                        // Create building label
                         let labelGeometry = SCNText()
                         labelGeometry.string = buildingDict.value(forKey: "name")
                         let labelNode = SCNNode(geometry: labelGeometry)
@@ -188,6 +184,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         if (buildingLabelNode == nil) {
                             // Add the node to the scene
                             sceneView.scene.rootNode.addChildNode(labelNode)
+                        } else {
+                            // Otherwise update the position
+                            buildingLabelNode?.position = labelNode.position
                         }
                     }
 
@@ -222,7 +221,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             } else {
                 // Reading cached data failed; download JSON data from the API in a single thread
                 print("had to download json data")
-                return try Data(contentsOf: URL(string: vtBuildingsWSBaseUrl)!, options: NSData.ReadingOptions.dataReadingMapped)
+                let jsonData: Data? = try Data(contentsOf: URL(string: vtBuildingsWSBaseUrl)!, options: NSData.ReadingOptions.dataReadingMapped)
+                    // Save the data we just downloaded from the API
+                if let jsonDataFromApi = jsonData {
+                    writeJsonDataToDocumentDirectory(jsonData: jsonDataFromApi, jsonFileName: "VTBuildings.plist")
+                }
+                
+                return jsonData
             }
         } catch let error as NSError {
             showAlertMessage(title: "HTTP error", message: "Error getting VT Building data from the server: \(error.localizedDescription)")
