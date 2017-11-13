@@ -147,22 +147,32 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                     let jsonArray = try JSONSerialization.jsonObject(with: jsonDataFromApi, options: .mutableContainers) as! NSArray
                     
                     // Loop through each building in the response
-                    for var building in jsonArray {
-                        var buildingDict = building as! NSMutableDictionary
+                    for building in jsonArray {
+                        let buildingDict = building as! NSMutableDictionary
                         
                         let buildingLocation: CLLocation = CLLocation(latitude: buildingDict["latitude"]! as! CLLocationDegrees, longitude: buildingDict["longitude"]! as! CLLocationDegrees)
                         
                         // Compute the distance between the user's current location and the building's location
-                        let distanceFromUser: Double = computeDistance(lat1: currentLocation.coordinate.latitude, long1: currentLocation.coordinate.longitude, lat2: buildingLocation.coordinate.latitude, long2: buildingLocation.coordinate.longitude)
+                        let distanceFromUserInMiles: Double = distanceBetweenPointsInMiles(lat1: currentLocation.coordinate.latitude, long1: currentLocation.coordinate.longitude, lat2: buildingLocation.coordinate.latitude, long2: buildingLocation.coordinate.longitude)
+                        buildingDict["distanceFromUser"] = distanceFromUserInMiles
                         
-                        buildingDict["distanceFromUser"] = distanceFromUser
+                        // Add a marker in the building's position
+                        let buildingARLocation: matrix_float4x4 = getARCoordinateOfBuilding(userLocation: currentLocation, buildingLocation: buildingLocation, distanceFromUserInMiles: distanceFromUserInMiles)
+                        let buildARLocationPositionColumn = buildingARLocation.columns.3
+                        let targetPosition: SCNVector3 = SCNVector3Make(buildARLocationPositionColumn.x, buildARLocationPositionColumn.y /* + vertical offset would go here */, buildARLocationPositionColumn.z)
+//                        let cubeGeometry: SCNBox = SCNBox(
+//                            width: 10, height: 10, length: 10, chamferRadius: 0)
+                        let labelNode = SKLabelNode()
+                        labelNode.text = buildingDict["name"]
+                        labelNode.position = targetPosition
+                        // Add the node to the scene
+                        sceneView.scene.rootNode.addChildNode(labelNode)
+
+                        
                     }
-                    
+
                     // Sort the array of buildings
-                    var sortedBuildingArray = jsonArray.sorted{($1 as! NSDictionary)["distanceFromUser"] as! Double > ($0 as! NSDictionary)["distanceFromUser"] as! Double}
-                    
-                    
-                    
+//                    var sortedBuildingArray = jsonArray.sorted{($1 as! NSDictionary)["distanceFromUser"] as! Double > ($0 as! NSDictionary)["distanceFromUser"] as! Double}
                     
 //                    let first = sortedBuildingArray.first! as! NSDictionary
 //                    let firstLocation: CLLocation = CLLocation(latitude: first["latitude"]! as! CLLocationDegrees, longitude: first["longitude"]! as! CLLocationDegrees)
@@ -187,8 +197,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     // MARK: - Haversine formula
     // Calculates the distance between two lat/long coordinates in miles.
     // Modified from https://gist.github.com/Jamonek/16ecda78cebcd0da5862
-    func computeDistance(lat1: Double, long1: Double, lat2: Double, long2: Double) -> Double {
-        
+    func distanceBetweenPointsInMiles(lat1: Double, long1: Double, lat2: Double, long2: Double) -> Double {
         let radius: Double = 3959.0 // Average radius of the Earth in miles
         
         let deltaP = degreesToRadians(lat2) - degreesToRadians(lat1)
@@ -200,6 +209,27 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         return d
     }
     
+    func getARCoordinateOfBuilding(userLocation: CLLocation, buildingLocation: CLLocation, distanceFromUserInMiles: Double) -> matrix_float4x4 {
+        let bearing = getBearingBetweenPoints(point1: userLocation, point2: buildingLocation)
+        let originTransform = matrix_identity_float4x4
+        
+        // Create a transform with a translation of distance meters away
+        let milesPerMeter = 1609.344
+        let distanceInMeters = distanceFromUserInMiles * milesPerMeter
+        
+        // Matrix that will hold the position of the building in AR coordinates
+        var translationMatrix = matrix_identity_float4x4
+        translationMatrix.columns.3.z = -1 * Float(distanceInMeters)
+        
+        // Rotate the position matrix
+        let rotationMatrix = MatrixHelper.rotateMatrixAroundY(degrees: Float(bearing * -1), matrix: translationMatrix)
+        
+        // Multiply the rotation by the translation
+        let transformMatrix = simd_mul(rotationMatrix, translationMatrix)
+        
+        // Multiply the origin by the translation to get the coordinates
+        return simd_mul(originTransform, transformMatrix)
+    }
     
     // MARK - Bearing between two points
     // Adapted from https://stackoverflow.com/questions/26998029/calculating-bearing-between-two-cllocation-points-in-swift

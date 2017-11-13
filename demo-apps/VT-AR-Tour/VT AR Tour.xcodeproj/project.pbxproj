@@ -15,6 +15,8 @@
 		B82D95A91FA8D250000CEEE4 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B82D95A71FA8D250000CEEE4 /* LaunchScreen.storyboard */; };
 		B82D95B41FA8D250000CEEE4 /* VT_AR_TourTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82D95B31FA8D250000CEEE4 /* VT_AR_TourTests.swift */; };
 		B82D95BF1FA8D250000CEEE4 /* VT_AR_TourUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82D95BE1FA8D250000CEEE4 /* VT_AR_TourUITests.swift */; };
+		B8475D3B1FB9430D009C6D3B /* MatrixHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8475D3A1FB9430D009C6D3B /* MatrixHelper.swift */; };
+		B8475D3D1FB94EB3009C6D3B /* LocationMarkerNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8475D3C1FB94EB3009C6D3B /* LocationMarkerNode.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,8 @@
 		B82D95BA1FA8D250000CEEE4 /* VT AR TourUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "VT AR TourUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B82D95BE1FA8D250000CEEE4 /* VT_AR_TourUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VT_AR_TourUITests.swift; sourceTree = "<group>"; };
 		B82D95C01FA8D250000CEEE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B8475D3A1FB9430D009C6D3B /* MatrixHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixHelper.swift; sourceTree = "<group>"; };
+		B8475D3C1FB94EB3009C6D3B /* LocationMarkerNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationMarkerNode.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +110,8 @@
 				B82D95A51FA8D250000CEEE4 /* Assets.xcassets */,
 				B82D95A71FA8D250000CEEE4 /* LaunchScreen.storyboard */,
 				B82D95AA1FA8D250000CEEE4 /* Info.plist */,
+				B8475D3A1FB9430D009C6D3B /* MatrixHelper.swift */,
+				B8475D3C1FB94EB3009C6D3B /* LocationMarkerNode.swift */,
 			);
 			path = "VT AR Tour";
 			sourceTree = "<group>";
@@ -263,7 +269,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B8475D3B1FB9430D009C6D3B /* MatrixHelper.swift in Sources */,
 				B82D95A11FA8D250000CEEE4 /* ViewController.swift in Sources */,
+				B8475D3D1FB94EB3009C6D3B /* LocationMarkerNode.swift in Sources */,
 				B82D959D1FA8D250000CEEE4 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
