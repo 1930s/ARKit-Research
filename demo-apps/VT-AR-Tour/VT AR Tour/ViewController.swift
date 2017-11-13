@@ -18,6 +18,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     // A strong reference to CLLocationManager is required by the CoreLocation API.
     var locationManager = CLLocationManager()
     
+    // JSON read from the Document directory
+    var jsonInDocumentDirectory: Data? = nil
+    
     let vtBuildingsWSBaseUrl: String = "http://orca.cs.vt.edu/VTBuildingsJAX-RS/webresources/vtBuildings"
     
     override func viewDidLoad() {
@@ -129,22 +132,34 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
      */
     // New location data is available
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-    
-        if let currentLocation: CLLocation = locations.last {
-            var jsonData: Data?
-            
-            // Download JSON data in a single thread
-            // TODO: cache the data and use that instead
-            do {
-                jsonData = try Data(contentsOf: URL(string: vtBuildingsWSBaseUrl)!, options: NSData.ReadingOptions.dataReadingMapped)
-            } catch let error as NSError {
-                showAlertMessage(title: "HTTP error", message: "Error getting VT Building data from the server: \(error.localizedDescription)")
-            }
         
-            if let jsonDataFromApi = jsonData {
+        if let currentLocation: CLLocation = locations.last {
+            if jsonInDocumentDirectory == nil {
+                jsonInDocumentDirectory = getVTBuildingsJSON()
+            }
+            
+            if let jsonDataFromApi = jsonInDocumentDirectory {
                 // Getting the JSON was successful
                 do {
+                    if (jsonInDocumentDirectory == nil) {
+                        // Save the data we just downloaded from the API
+                        writeJsonDataToDocumentDirectory(jsonData: jsonDataFromApi, jsonFileName: "VTBuildings.plist")
+                        print("saved the json data")
+                    } else {
+                        print(jsonInDocumentDirectory)
+                        print("didn't save cache unnecessarily")
+                    }
+                    
                     let jsonArray = try JSONSerialization.jsonObject(with: jsonDataFromApi, options: .mutableContainers) as! NSArray
+                    
+                    // TODO remove: example building
+                    // -----------------------------------------------------------------
+                    let testBuilding = jsonArray.firstObject as! NSMutableDictionary
+                    // coordinates of The Edge Apartments
+                    testBuilding["latitude"] = 37.235593
+                    testBuilding["longitude"] = -80.423771
+                    testBuilding["name"] = "The Edge Apartments"
+                    // -----------------------------------------------------------------
                     
                     // Loop through each building in the response
                     for building in jsonArray {
@@ -160,23 +175,19 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         let buildingARLocation: matrix_float4x4 = getARCoordinateOfBuilding(userLocation: currentLocation, buildingLocation: buildingLocation, distanceFromUserInMiles: distanceFromUserInMiles)
                         let buildARLocationPositionColumn = buildingARLocation.columns.3
                         let targetPosition: SCNVector3 = SCNVector3Make(buildARLocationPositionColumn.x, buildARLocationPositionColumn.y /* + vertical offset would go here */, buildARLocationPositionColumn.z)
-//                        let cubeGeometry: SCNBox = SCNBox(
-//                            width: 10, height: 10, length: 10, chamferRadius: 0)
-                        let labelNode = SKLabelNode()
-                        labelNode.text = buildingDict["name"]
+                        
+                        let labelGeometry = SCNText()
+                        labelGeometry.string = buildingDict.value(forKey: "name")
+                        let labelNode = SCNNode(geometry: labelGeometry)
                         labelNode.position = targetPosition
+                        
                         // Add the node to the scene
                         sceneView.scene.rootNode.addChildNode(labelNode)
-
-                        
                     }
 
                     // Sort the array of buildings
 //                    var sortedBuildingArray = jsonArray.sorted{($1 as! NSDictionary)["distanceFromUser"] as! Double > ($0 as! NSDictionary)["distanceFromUser"] as! Double}
-                    
-//                    let first = sortedBuildingArray.first! as! NSDictionary
-//                    let firstLocation: CLLocation = CLLocation(latitude: first["latitude"]! as! CLLocationDegrees, longitude: first["longitude"]! as! CLLocationDegrees)
-//                    showAlertMessage(title: "", message: "The closest building to you is \(first["name"]!). It is \(first["distanceFromUser"]!) miles away.")
+
                 } catch let error as NSError {
                     showAlertMessage(title: "Error in JSON serialization", message: error.localizedDescription)
                 }
@@ -188,6 +199,57 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
         //
         return
+    }
+    
+    // MARK: Get JSON Data
+    
+    // Gets the VT Buildings JSON from the device's cache or from the
+    func getVTBuildingsJSON() -> Data? {
+        do {
+            // Try to read the JSON from the device's Document directory
+            jsonInDocumentDirectory = getJsonInDocumentDirectory(jsonFileName: "VTBuildings.plist")
+            
+            if jsonInDocumentDirectory != nil {
+                // Successfully read cached data
+                print("read json from cache")
+                return jsonInDocumentDirectory
+            } else {
+                // Reading cached data failed; download JSON data from the API in a single thread
+                return try Data(contentsOf: URL(string: vtBuildingsWSBaseUrl)!, options: NSData.ReadingOptions.dataReadingMapped)
+                print("had to download json data")
+            }
+        } catch let error as NSError {
+            showAlertMessage(title: "HTTP error", message: "Error getting VT Building data from the server: \(error.localizedDescription)")
+        }
+        
+        return jsonInDocumentDirectory
+    }
+    
+    // MARK: Reading/Writing JSON from Document directory
+    
+    // Returns an optional Data object holding the contents of the JSON file in the Document directory.
+    func getJsonInDocumentDirectory(jsonFileName: String) -> Data? {
+        let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+        let documentDirectoryPath = paths[0] as String
+        
+        do {
+            let jsonObject = try Data(contentsOf: URL(fileURLWithPath: documentDirectoryPath).appendingPathComponent(jsonFileName), options: NSData.ReadingOptions.dataReadingMapped)
+            return jsonObject
+        } catch _ as NSError{
+            return nil
+        }
+    }
+    
+    // Saves json data to the given filename in the Document directory
+    func writeJsonDataToDocumentDirectory(jsonData: Data, jsonFileName: String) {
+        let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+        let documentDirectoryPath = paths[0] as String
+        
+        do {
+            try jsonData.write(to: URL(fileURLWithPath: documentDirectoryPath).appendingPathComponent(jsonFileName), options: .atomicWrite)
+        } catch let error as NSError {
+            print("Error writing to cache file: \(error.localizedDescription)")
+        }
     }
     
     // MARK: - Degrees <--> Radians conversion functions
