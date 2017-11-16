@@ -136,6 +136,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         
         if let currentLocation: CLLocation = locations.last {
+            print("Current location: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude) location size: \(locations.count)")
             if jsonInDocumentDirectory == nil {
                 jsonInDocumentDirectory = getVTBuildingsJSON()
             }
@@ -179,9 +180,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         labelNode.name = buildingName
                         labelNode.position = targetPosition
                         
+                        // Always point the node towards the camera
+                        labelNode.constraints = [SCNConstraint]()
+                        labelNode.constraints?.append(SCNBillboardConstraint())
+
+                        
                         // Only add the building label if it doesn't already exist
                         let buildingLabelNode = sceneView.scene.rootNode.childNode(withName: buildingName , recursively: false)
-                        if (buildingLabelNode == nil) {
+                        if (buildingLabelNode == nil && (buildingDict.value(forKey: "distanceFromUser") as! Double) <= 1.0) {
                             // Add the node to the scene
                             sceneView.scene.rootNode.addChildNode(labelNode)
                         } else {
