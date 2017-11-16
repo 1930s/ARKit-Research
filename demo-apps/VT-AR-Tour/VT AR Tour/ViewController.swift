@@ -25,9 +25,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     
     let vtBuildingsWSBaseUrl: String = "http://orca.cs.vt.edu/VTBuildingsJAX-RS/webresources/vtBuildings"
     
+    // MARK - View Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupScene()
+        sceneView.delegate = self
        
         // User must enable location services to use this app
         if !CLLocationManager.locationServicesEnabled() {
@@ -40,24 +41,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         getLocation()
     }
     
-    func setupScene() {
-        // Set the view's delegate
-        sceneView.delegate = self
-        
-        // Show statistics such as fps and timing information
-        //sceneView.showsStatistics = true
-        
-        // Create a new scene
-        //let scene = SCNScene(named: "art.scnassets/ship.scn")!
-        
-        // Set the scene to the view
-        //sceneView.scene = scene
-    }
-    
     func getLocation() {
         // The user has not authorized location monitoring
         if (CLLocationManager.authorizationStatus() == .denied) {
-            
             showAlertMessage(title: "App Not Authorized", message: "Unable to determine your location: please allow VT AR Tour to use your location.")
             
             // Try to get location authorization again
@@ -80,9 +66,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
+        
+        // Defines the ARSession's coordinate system based on gravity and the compass heading in the device. Note: THIS IS CRITICALLY IMPORTANT for location-based AR.
+        configuration.worldAlignment = .gravityAndHeading
 
         // Run the view's session
         sceneView.session.run(configuration)
@@ -101,16 +88,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     }
 
     // MARK: - ARSCNViewDelegate
-    
-/*
-    // Override to create and configure nodes for anchors added to the view's session.
-    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        let node = SCNNode()
-     
-        return node
-    }
-*/
-    
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Present an error message to the user
         
@@ -134,6 +111,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
      */
     // New location data is available
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        // Need to wait until at least one heading update comes through. If we proceed before this, our coordinate system won't be set up correctly
+        if manager.heading?.magneticHeading == nil {
+            return
+        }
         
         if let currentLocation: CLLocation = locations.last {
             print("Current location: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude) location size: \(locations.count)")
@@ -158,6 +139,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                     testBuilding["longitude"] = -80.423771
                     testBuilding["name"] = "The Edge Apartments"
                     // -----------------------------------------------------------------
+                    
+                    // TODO maybe save this and don't waste resources re-processing this and all its entries later on. Like just store plist of the dict or something
+                    let dict_LabelNode_BuildingDict = NSMutableDictionary()
+                    
                     // Loop through each building in the response
                     for building in jsonArray {
                         let buildingDict = building as! NSMutableDictionary
@@ -165,12 +150,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         
                         // Compute the distance between the user's current location and the building's location
                         let distanceFromUserInMiles: Double = distanceBetweenPointsInMiles(lat1: currentLocation.coordinate.latitude, long1: currentLocation.coordinate.longitude, lat2: buildingLocation.coordinate.latitude, long2: buildingLocation.coordinate.longitude)
+                        
+                        // TODO determine if 1 mile is an appropriate range
+                        // Don't bother processing buildings that are more than a mile away
+                        if (distanceFromUserInMiles >= 0.25) {
+                            continue
+                        }
+//                         print("distance from user in miles: \(distanceFromUserInMiles)")
+                        
                         buildingDict["distanceFromUser"] = distanceFromUserInMiles
                         
                         // Add a marker in the building's position
                         let buildingARLocation: matrix_float4x4 = getARCoordinateOfBuilding(userLocation: currentLocation, buildingLocation: buildingLocation, distanceFromUserInMiles: distanceFromUserInMiles)
-                        let buildARLocationPositionColumn = buildingARLocation.columns.3
-                        let targetPosition: SCNVector3 = SCNVector3Make(buildARLocationPositionColumn.x, buildARLocationPositionColumn.y /* + vertical offset would go here */, buildARLocationPositionColumn.z)
+                        let buildingARLocationPositionColumn = buildingARLocation.columns.3
+                        let targetPosition: SCNVector3 = SCNVector3Make(buildingARLocationPositionColumn.x, buildingARLocationPositionColumn.y /* + vertical offset would go here */, buildingARLocationPositionColumn.z)
                         
                         // Create building label
                         let labelGeometry = SCNText()
@@ -183,32 +176,31 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         // Always point the node towards the camera
                         labelNode.constraints = [SCNConstraint]()
                         labelNode.constraints?.append(SCNBillboardConstraint())
-
+                       
+                        // Add the building dict and the label node to the dictionary if the distance is inside the range
+                        dict_LabelNode_BuildingDict[labelNode] = buildingDict
                         
                         // Only add the building label if it doesn't already exist
                         let buildingLabelNode = sceneView.scene.rootNode.childNode(withName: buildingName , recursively: false)
-                        if (buildingLabelNode == nil && (buildingDict.value(forKey: "distanceFromUser") as! Double) <= 1.0) {
+                        if (buildingLabelNode == nil) {
                             // Add the node to the scene
                             sceneView.scene.rootNode.addChildNode(labelNode)
                         } else {
                             // Otherwise update the position
-                            buildingLabelNode?.position = labelNode.position
+                            //buildingLabelNode?.position = labelNode.position
                         }
                     }
-
-                    // Sort the array of buildings
-//                    var sortedBuildingArray = jsonArray.sorted{($1 as! NSDictionary)["distanceFromUser"] as! Double > ($0 as! NSDictionary)["distanceFromUser"] as! Double}
-
+                    // TODO get values sorted by distance; try seeing if something is gonna occlude the node
                 } catch let error as NSError {
                     showAlertMessage(title: "Error in JSON serialization", message: error.localizedDescription)
                 }
             }
         }
     }
-    
+
     // New heading information available
     func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
-        //
+        print("User is facing: \(newHeading.magneticHeading)")
         return
     }
     
@@ -288,6 +280,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         return d
     }
     
+    // Converts a CLLocation object to a matrix_float4x4 with the 3rd column representing the location in SCNKit coordinates
     func getARCoordinateOfBuilding(userLocation: CLLocation, buildingLocation: CLLocation, distanceFromUserInMiles: Double) -> matrix_float4x4 {
         let bearing = getBearingBetweenPoints(point1: userLocation, point2: buildingLocation)
         let originTransform = matrix_identity_float4x4
