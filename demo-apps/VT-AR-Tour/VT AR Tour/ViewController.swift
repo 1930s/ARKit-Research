@@ -118,6 +118,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         
         if let currentLocation: CLLocation = locations.last {
             print("Current location: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude) location size: \(locations.count)")
+            // TODO maybe save this and don't waste resources re-processing this and all its entries later on. Like just store plist of the dict or something
+            // Fetch the VT Buildings JSON if necessary
             if jsonInDocumentDirectory == nil {
                 jsonInDocumentDirectory = getVTBuildingsJSON()
             }
@@ -158,39 +160,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         }
 //                         print("distance from user in miles: \(distanceFromUserInMiles)")
                         
+                        // Record how far the building is from the user.
                         buildingDict["distanceFromUser"] = distanceFromUserInMiles
                         
-                        // Add a marker in the building's position
-                        let buildingARLocation: matrix_float4x4 = getARCoordinateOfBuilding(userLocation: currentLocation, buildingLocation: buildingLocation, distanceFromUserInMiles: distanceFromUserInMiles)
-                        let buildingARLocationPositionColumn = buildingARLocation.columns.3
-                        let targetPosition: SCNVector3 = SCNVector3Make(buildingARLocationPositionColumn.x, buildingARLocationPositionColumn.y /* + vertical offset would go here */, buildingARLocationPositionColumn.z)
-                        
-                        // Create building label
-                        let labelGeometry = SCNText()
-                        labelGeometry.string = buildingDict.value(forKey: "name")
-                        let labelNode = SCNNode(geometry: labelGeometry)
-                        let buildingName: String = buildingDict.value(forKey: "name") as! String
-                        labelNode.name = buildingName
-                        labelNode.position = targetPosition
-                        
-                        // Always point the node towards the camera
-                        labelNode.constraints = [SCNConstraint]()
-                        labelNode.constraints?.append(SCNBillboardConstraint())
-                       
-                        // Add the building dict and the label node to the dictionary if the distance is inside the range
+                        // Create a building label node and record it and its related dictionary in another dictionary
+                        let labelNode: SCNNode = createBuildingLabelNode(currentLocation, buildingLocation, distanceFromUserInMiles, buildingDict: buildingDict)
                         dict_LabelNode_BuildingDict[labelNode] = buildingDict
                         
                         // Only add the building label if it doesn't already exist
-                        let buildingLabelNode = sceneView.scene.rootNode.childNode(withName: buildingName , recursively: false)
+                        let buildingLabelNode = sceneView.scene.rootNode.childNode(withName: labelNode.name!, recursively: false)
                         if (buildingLabelNode == nil) {
                             // Add the node to the scene
                             sceneView.scene.rootNode.addChildNode(labelNode)
-                        } else {
-                            // Otherwise update the position
-                            //buildingLabelNode?.position = labelNode.position
                         }
                     }
-                    // TODO get values sorted by distance; try seeing if something is gonna occlude the node
+                    // TODO Prevent labels from rendering "on top"/"in front" of each other. You can't read it if this happens.
                 } catch let error as NSError {
                     showAlertMessage(title: "Error in JSON serialization", message: error.localizedDescription)
                 }
@@ -259,6 +243,28 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         } catch let error as NSError {
             print("Error writing to cache file: \(error.localizedDescription)")
         }
+    }
+    
+    // MARK - Create Building Labels
+    func createBuildingLabelNode(_ currentLocation: CLLocation, _ buildingLocation: CLLocation, _ distanceFromUserInMiles: Double, buildingDict: NSMutableDictionary) -> SCNNode {
+        // Add a marker in the building's position
+        let buildingARLocation: matrix_float4x4 = getARCoordinateOfBuilding(userLocation: currentLocation, buildingLocation: buildingLocation, distanceFromUserInMiles: distanceFromUserInMiles)
+        let buildingARLocationPositionColumn = buildingARLocation.columns.3
+        let targetPosition: SCNVector3 = SCNVector3Make(buildingARLocationPositionColumn.x, buildingARLocationPositionColumn.y /* + vertical offset would go here */, buildingARLocationPositionColumn.z)
+        
+        // Create building label
+        let labelGeometry = SCNText()
+        labelGeometry.string = buildingDict.value(forKey: "name")
+        let labelNode = SCNNode(geometry: labelGeometry)
+        let buildingName: String = buildingDict.value(forKey: "name") as! String
+        labelNode.name = buildingName
+        labelNode.position = targetPosition
+        
+        // Always point the node towards the camera
+        labelNode.constraints = [SCNConstraint]()
+        labelNode.constraints?.append(SCNBillboardConstraint())
+        
+        return labelNode
     }
     
     // MARK: - Degrees <--> Radians conversion functions
