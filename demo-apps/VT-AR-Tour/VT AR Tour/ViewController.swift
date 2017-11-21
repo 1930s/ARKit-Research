@@ -37,8 +37,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             return
         }
         
-        locationManager.requestWhenInUseAuthorization()
+        // Set up tap gesture recognizer
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ViewController.userTappedScreen(_:)))
+        sceneView.addGestureRecognizer(tapGesture)
         
+        // Get the user's location
+        locationManager.requestWhenInUseAuthorization()
         getLocation()
         
         // Display a hint for a few seconds
@@ -70,7 +74,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         labelBackground.strokeColor = UIColor.clear
         labelBackground.fillColor = UIColor.init(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.96)
         labelBackground.addChild(hintLabel)
-        //labelBackground.alpha = 0.0
         
         // Add the overlay and its contents to the scene.
         overlayScene.addChild(labelBackground)
@@ -92,7 +95,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             .removeFromParent()]))
     }
     
-    
     func getLocation() {
         // The user has not authorized location monitoring
         if (CLLocationManager.authorizationStatus() == .denied) {
@@ -106,6 +108,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         
         locationManager.delegate = self
         
+        // TODO for debugging. Can choose a less accurate filter later.
         // Report ALL device movement
         locationManager.distanceFilter = kCLDistanceFilterNone
         
@@ -154,12 +157,29 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         // Reset tracking and/or remove existing anchors if consistent tracking is required
         
     }
+ 
+    // MARK: - Gesture Handling Action methods
     
-    /*
-     ------------------------------------------
-     MARK: - CLLocationManager Delegate Methods
-     ------------------------------------------
-     */
+    @IBAction func userTappedScreen(_ sender: UITapGestureRecognizer) {
+        print("user tapped screen")
+        // Get the 2D point of the touch in the SceneView
+        let tapPoint: CGPoint = sender.location(in: self.sceneView)
+        
+        // Conduct the hit test on the SceneView
+        let hitTestResults: [ARHitTestResult] = sceneView.hitTest(tapPoint, types: .existingPlaneUsingExtent)
+        
+        if hitTestResults.isEmpty {
+            return
+        }
+        
+        // Pick the closest building
+        let result: ARHitTestResult = hitTestResults[0]
+        
+        print("hit test result: \(result)")
+    }
+  
+    // MARK: - CLLocationManager Delegate Methods
+
     // New location data is available
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // Need to wait until at least one heading update comes through. If we proceed before this, our coordinate system won't be set up correctly
@@ -169,7 +189,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         
         if let currentLocation: CLLocation = locations.last {
             //print("Current location: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude) location size: \(locations.count)")
-            // TODO maybe save this and don't waste resources re-processing this and all its entries later on. Like just store plist of the dict or something
             // Fetch the VT Buildings JSON if necessary
             if jsonInDocumentDirectory == nil {
                 jsonInDocumentDirectory = getVTBuildingsJSON()
@@ -193,7 +212,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                     testBuilding["name"] = "The Edge Apartments"
                     // -----------------------------------------------------------------
                     
-                    // TODO maybe save this and don't waste resources re-processing this and all its entries later on. Like just store plist of the dict or something
                     let dict_LabelNode_BuildingDict = NSMutableDictionary()
                     
                     // Loop through each building in the response
@@ -297,6 +315,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     
     // MARK - Create Building Labels
     func createBuildingLabelNode(_ currentLocation: CLLocation, _ buildingLocation: CLLocation, _ distanceFromUserInMiles: Double, buildingDict: NSMutableDictionary) -> SCNNode {
+        
         // Add a marker in the building's position
         let buildingARLocation: matrix_float4x4 = getARCoordinateOfBuilding(userLocation: currentLocation, buildingLocation: buildingLocation, distanceFromUserInMiles: distanceFromUserInMiles)
         let buildingARLocationPositionColumn = buildingARLocation.columns.3

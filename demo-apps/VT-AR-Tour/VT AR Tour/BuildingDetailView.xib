@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ViewController" customModule="VT_AR_Tour" customModuleProvider="target"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Building Name" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eNP-di-VxR">
+                    <rect key="frame" x="16" y="36" width="343" height="30"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="25"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="F0x-dg-SDi">
+                    <rect key="frame" x="16" y="74" width="343" height="268"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="268" id="vLl-4H-5jU"/>
+                    </constraints>
+                </imageView>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fd2-nj-UTV">
+                    <rect key="frame" x="16" y="350" width="343" height="122"/>
+                    <string key="text">Building description. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip </string>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <constraints>
+                <constraint firstItem="eNP-di-VxR" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="16" id="4JV-Pi-xP6"/>
+                <constraint firstItem="F0x-dg-SDi" firstAttribute="top" secondItem="eNP-di-VxR" secondAttribute="bottom" constant="8" id="DD9-Mg-00z"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="F0x-dg-SDi" secondAttribute="trailing" constant="16" id="I5t-Ct-7VD"/>
+                <constraint firstItem="fd2-nj-UTV" firstAttribute="top" secondItem="F0x-dg-SDi" secondAttribute="bottom" constant="8" id="PmO-tI-Joq"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="fd2-nj-UTV" secondAttribute="trailing" constant="16" id="dSy-cB-A8p"/>
+                <constraint firstItem="eNP-di-VxR" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="16" id="l0Z-gp-dbk"/>
+                <constraint firstItem="fd2-nj-UTV" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="16" id="lCO-T5-gZV"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="eNP-di-VxR" secondAttribute="trailing" constant="16" id="opK-l5-Gnd"/>
+                <constraint firstItem="F0x-dg-SDi" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="16" id="r5o-tx-O86"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <point key="canvasLocation" x="33.5" y="54.5"/>
+        </view>
+    </objects>
+</document>
