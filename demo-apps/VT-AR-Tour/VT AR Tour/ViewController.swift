@@ -173,7 +173,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         }
         
         if let currentLocation: CLLocation = locations.last {
-            //print("Current location: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude) location size: \(locations.count)")
+            print("Current location: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude) location size: \(locations.count)")
             // Fetch the VT Buildings JSON if necessary
             if jsonInDocumentDirectory == nil {
                 jsonInDocumentDirectory = getVTBuildingsJSON()
@@ -192,8 +192,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                     // -----------------------------------------------------------------
                     let testBuilding = jsonArray.firstObject as! NSMutableDictionary
                     // coordinates of The Edge Apartments
-                    testBuilding["latitude"] = 37.235593
-                    testBuilding["longitude"] = -80.423771
+                    testBuilding["latitude"] = currentLocation.coordinate.latitude.binade
+                    testBuilding["longitude"] = currentLocation.coordinate.longitude.binade
                     testBuilding["name"] = "The Edge Apartments"
                     // -----------------------------------------------------------------
                     
@@ -205,8 +205,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         // Compute the distance between the user's current location and the building's location
                         let distanceFromUserInMiles: Double = distanceBetweenPointsInMiles(lat1: currentLocation.coordinate.latitude, long1: currentLocation.coordinate.longitude, lat2: buildingLocation.coordinate.latitude, long2: buildingLocation.coordinate.longitude)
                         
-                        // TODO determine if this is an appropriate range
-                        if (distanceFromUserInMiles >= 0.5) {
+                        // TODO: changed for debug. Later determine like .25 miles away or something
+                        if (distanceFromUserInMiles >= 9999) {
                             continue
                         }
 //                         print("distance from user in miles: \(distanceFromUserInMiles)")
@@ -382,8 +382,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     
     // MARK: - Gesture Handling Action methods
     
+    //TODO remove
+    var count = 0
+    
     @IBAction func userTappedScreen(_ sender: UITapGestureRecognizer) {
-        print("user tapped \(sender.view)")
+        // TODO remove--for debugging only
+        if dict_LabelNode_BuildingDict.count > 0 && count < 1 {
+            print("displaying building information")
+            displayBuildingInfo(buildingName: "Surge Space Building")
+            count+=1
+            return
+        } else {
+            print("nothing in the dict yet")
+            return
+        }
+        // ------------------
+        
+        print("user tapped \(String(describing: sender.view))")
         // Get the 2D point of the touch in the SceneView
         let tapPoint: CGPoint = sender.location(in: self.sceneView)
         
@@ -396,6 +411,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             print("no results")
         }
     }
+    
+    
+
     
     // Displays the building's info in an overlay
     func displayBuildingInfo(buildingName: String?) {
@@ -425,8 +443,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             print("removing tap gesture recognizer")
 
             self.addChildViewController(buildingDetailViewController)
-            self.view.addSubview(viewFromNib)
-            self.view.bringSubview(toFront: viewFromNib)
+            
+//            self.view.addSubview(viewFromNib)
+//            self.view.bringSubview(toFront: viewFromNib)
+            let buildingOverlayScene = SKScene(size: sceneView.bounds.size)
+            sceneView.overlaySKScene = buildingOverlayScene
+            buildingOverlayScene.view!.addSubview(viewFromNib)
+//            fadeNodeInAndOut(node: sceneView.overlaySKScene!, initialDelay: 2.0, fadeInDuration: 1.0, displayDuration: 6.0, fadeOutDuration: 1.0)
         }
     }
     
@@ -434,6 +457,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     
     // Closes the Building Details subview. 
     func closeBuildingDetailsView(viewController: UIViewController) {
+        count -= 1 // TODO remove
         print("closing details")
         viewController.view.removeFromSuperview()
         viewController.removeFromParentViewController()

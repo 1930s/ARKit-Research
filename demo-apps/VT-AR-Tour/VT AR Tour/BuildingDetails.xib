@@ -14,6 +14,7 @@
                 <outlet property="buildingDescriptionLabel" destination="fd2-nj-UTV" id="xw9-Fq-kDs"/>
                 <outlet property="buildingImageview" destination="F0x-dg-SDi" id="HS8-M2-erI"/>
                 <outlet property="buildingNameLabel" destination="eNP-di-VxR" id="5hl-rQ-zMh"/>
+                <outlet property="scrollView" destination="JVC-hh-r48" id="0db-bt-u3M"/>
                 <outlet property="view" destination="iN0-l3-epB" id="clg-Vk-KnQ"/>
             </connections>
         </placeholder>
@@ -34,15 +35,30 @@
                         <constraint firstAttribute="height" constant="268" id="vLl-4H-5jU"/>
                     </constraints>
                 </imageView>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fd2-nj-UTV">
-                    <rect key="frame" x="16" y="350" width="343" height="122"/>
-                    <string key="text">Building description. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip </string>
-                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                    <nil key="textColor"/>
-                    <nil key="highlightedColor"/>
-                </label>
+                <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JVC-hh-r48">
+                    <rect key="frame" x="16" y="350" width="343" height="253"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fd2-nj-UTV">
+                            <rect key="frame" x="0.0" y="0.0" width="343" height="200"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="200" id="bcs-fb-YcE"/>
+                            </constraints>
+                            <string key="text">Building description. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip </string>
+                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                    <constraints>
+                        <constraint firstAttribute="trailing" secondItem="fd2-nj-UTV" secondAttribute="trailing" id="6eu-kl-PaR"/>
+                        <constraint firstItem="fd2-nj-UTV" firstAttribute="leading" secondItem="JVC-hh-r48" secondAttribute="leading" id="Bri-Lp-8c6"/>
+                        <constraint firstItem="fd2-nj-UTV" firstAttribute="centerX" secondItem="JVC-hh-r48" secondAttribute="centerX" id="YB1-bF-VPs"/>
+                        <constraint firstItem="fd2-nj-UTV" firstAttribute="top" secondItem="JVC-hh-r48" secondAttribute="top" id="pab-7X-EQW"/>
+                        <constraint firstAttribute="bottom" secondItem="fd2-nj-UTV" secondAttribute="bottom" constant="53" id="ymx-lb-hBE"/>
+                    </constraints>
+                </scrollView>
                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XvY-4e-5L3">
-                    <rect key="frame" x="162.5" y="480" width="50" height="36"/>
+                    <rect key="frame" x="162" y="611" width="50" height="36"/>
                     <fontDescription key="fontDescription" type="system" pointSize="20"/>
                     <state key="normal" title="Close"/>
                     <connections>
@@ -52,16 +68,22 @@
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
+                <constraint firstItem="JVC-hh-r48" firstAttribute="leading" secondItem="F0x-dg-SDi" secondAttribute="leading" id="3kM-Xj-gQn"/>
                 <constraint firstItem="eNP-di-VxR" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="16" id="4JV-Pi-xP6"/>
+                <constraint firstItem="JVC-hh-r48" firstAttribute="trailing" secondItem="F0x-dg-SDi" secondAttribute="trailing" id="7gH-2P-j4k"/>
                 <constraint firstItem="F0x-dg-SDi" firstAttribute="top" secondItem="eNP-di-VxR" secondAttribute="bottom" constant="8" id="DD9-Mg-00z"/>
                 <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="F0x-dg-SDi" secondAttribute="trailing" constant="16" id="I5t-Ct-7VD"/>
-                <constraint firstItem="fd2-nj-UTV" firstAttribute="top" secondItem="F0x-dg-SDi" secondAttribute="bottom" constant="8" id="PmO-tI-Joq"/>
-                <constraint firstItem="XvY-4e-5L3" firstAttribute="top" secondItem="fd2-nj-UTV" secondAttribute="bottom" constant="8" id="SzY-ld-JBF"/>
-                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="fd2-nj-UTV" secondAttribute="trailing" constant="16" id="dSy-cB-A8p"/>
-                <constraint firstItem="XvY-4e-5L3" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="doM-wq-WIV"/>
+                <constraint firstItem="JVC-hh-r48" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="16" id="IW5-k9-Dgd"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="XvY-4e-5L3" secondAttribute="bottom" constant="20" id="JeL-ax-9oW"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="XvY-4e-5L3" secondAttribute="trailing" constant="163" id="NAz-JH-WVt"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="JVC-hh-r48" secondAttribute="trailing" constant="16" id="NwR-fd-LVc"/>
+                <constraint firstItem="XvY-4e-5L3" firstAttribute="top" secondItem="JVC-hh-r48" secondAttribute="bottom" constant="8" symbolic="YES" id="PKX-lg-HFi"/>
+                <constraint firstItem="JVC-hh-r48" firstAttribute="top" secondItem="F0x-dg-SDi" secondAttribute="bottom" constant="8" id="Zdc-sO-mon"/>
                 <constraint firstItem="eNP-di-VxR" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="16" id="l0Z-gp-dbk"/>
-                <constraint firstItem="fd2-nj-UTV" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="16" id="lCO-T5-gZV"/>
+                <constraint firstItem="XvY-4e-5L3" firstAttribute="top" secondItem="JVC-hh-r48" secondAttribute="bottom" constant="8" id="lhp-3C-E2P"/>
                 <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="eNP-di-VxR" secondAttribute="trailing" constant="16" id="opK-l5-Gnd"/>
+                <constraint firstItem="JVC-hh-r48" firstAttribute="top" secondItem="F0x-dg-SDi" secondAttribute="bottom" constant="8" symbolic="YES" id="qLD-W2-ioN"/>
+                <constraint firstItem="XvY-4e-5L3" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="162" id="qRb-IG-iPj"/>
                 <constraint firstItem="F0x-dg-SDi" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="16" id="r5o-tx-O86"/>
             </constraints>
             <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>

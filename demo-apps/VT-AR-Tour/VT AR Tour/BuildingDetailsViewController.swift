@@ -12,10 +12,11 @@ protocol BuildingDetailsDelegate {
     func closeBuildingDetailsView(viewController: UIViewController)
 }
 
-class BuildingDetailsViewController: UIViewController {
+class BuildingDetailsViewController: UIViewController, UIScrollViewDelegate {
     
     @IBOutlet var buildingNameLabel: UILabel!
     @IBOutlet var buildingImageview: UIImageView!
+    @IBOutlet var scrollView: UIScrollView!
     @IBOutlet var buildingDescriptionLabel: UILabel!
     
     var delegate: BuildingDetailsDelegate?
@@ -26,5 +27,11 @@ class BuildingDetailsViewController: UIViewController {
         if let buildingDetailsDelegate = delegate {
             buildingDetailsDelegate.closeBuildingDetailsView(viewController: self)
         }
+    }
+    
+    // MARK: - UIScrollViewDelegate methods
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        print("scrolling")
     }
 }
