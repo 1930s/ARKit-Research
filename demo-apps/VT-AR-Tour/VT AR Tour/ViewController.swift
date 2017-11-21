@@ -38,8 +38,60 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         }
         
         locationManager.requestWhenInUseAuthorization()
+        
         getLocation()
+        
+        // Display a hint for a few seconds
+        sceneView.overlaySKScene = createOverlayHintLabel(withText: "Tap a building or walk closer to display more information.")
+        fadeNodeInAndOut(node: sceneView.overlaySKScene!, initialDelay: 2.0, fadeInDuration: 1.0, displayDuration: 6.0, fadeOutDuration: 1.0)
     }
+    
+    // Creates an overlay containing a label with hint text and a transucent background
+    func createOverlayHintLabel(withText: String) -> SKScene {
+        // Create an overlay banner to be positioned in the middle of the SceneView.
+        let overlayScene = SKScene(size: sceneView.bounds.size)
+        overlayScene.scaleMode = .resizeFill
+        
+        // Configure the hint label
+        let hintLabel = SKLabelNode(text: withText)
+        hintLabel.fontSize = 40
+        hintLabel.verticalAlignmentMode = .center
+        hintLabel.preferredMaxLayoutWidth = overlayScene.size.width
+        hintLabel.numberOfLines = 2 // Don't limit the number of lines
+        hintLabel.lineBreakMode = .byWordWrapping
+        
+        // Configure the label background
+        let labelBackground = SKShapeNode()
+        
+        // Give the background a slightly larger bounding rectangle in order to give the text a margin.
+        let labelBackgroundSizeRect = hintLabel.frame.insetBy(dx: -10, dy: -10)
+        labelBackground.path = CGPath(roundedRect: labelBackgroundSizeRect, cornerWidth: 5, cornerHeight: 5, transform: nil)
+        labelBackground.position = CGPoint(x: sceneView.frame.midX, y: sceneView.frame.midY)
+        labelBackground.strokeColor = UIColor.clear
+        labelBackground.fillColor = UIColor.init(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.96)
+        labelBackground.addChild(hintLabel)
+        //labelBackground.alpha = 0.0
+        
+        // Add the overlay and its contents to the scene.
+        overlayScene.addChild(labelBackground)
+        overlayScene.alpha = 0
+        
+        return overlayScene
+    }
+    
+    func fadeNodeInAndOut(node: SKNode, initialDelay: Double, fadeInDuration: Double, displayDuration: Double, fadeOutDuration: Double) {
+        // Fade in the label
+        node.run(SKAction.sequence([
+            .wait(forDuration: initialDelay),
+            .fadeIn(withDuration: fadeInDuration)]))
+        
+        // Wait and fade out the label
+        node.run(SKAction.sequence([
+            .wait(forDuration: displayDuration),
+            .fadeOut(withDuration: fadeOutDuration),
+            .removeFromParent()]))
+    }
+    
     
     func getLocation() {
         // The user has not authorized location monitoring
@@ -103,7 +155,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         
     }
     
-    
     /*
      ------------------------------------------
      MARK: - CLLocationManager Delegate Methods
@@ -117,7 +168,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         }
         
         if let currentLocation: CLLocation = locations.last {
-            print("Current location: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude) location size: \(locations.count)")
+            //print("Current location: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude) location size: \(locations.count)")
             // TODO maybe save this and don't waste resources re-processing this and all its entries later on. Like just store plist of the dict or something
             // Fetch the VT Buildings JSON if necessary
             if jsonInDocumentDirectory == nil {
@@ -153,9 +204,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         // Compute the distance between the user's current location and the building's location
                         let distanceFromUserInMiles: Double = distanceBetweenPointsInMiles(lat1: currentLocation.coordinate.latitude, long1: currentLocation.coordinate.longitude, lat2: buildingLocation.coordinate.latitude, long2: buildingLocation.coordinate.longitude)
                         
-                        // TODO determine if 1 mile is an appropriate range
-                        // Don't bother processing buildings that are more than a mile away
-                        if (distanceFromUserInMiles >= 0.25) {
+                        // TODO determine if this is an appropriate range
+                        if (distanceFromUserInMiles >= 0.5) {
                             continue
                         }
 //                         print("distance from user in miles: \(distanceFromUserInMiles)")
@@ -184,7 +234,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
 
     // New heading information available
     func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
-        print("User is facing: \(newHeading.magneticHeading)")
+        //print("User is facing: \(newHeading.magneticHeading)")
         return
     }
     
