@@ -25,6 +25,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     
     let vtBuildingsWSBaseUrl: String = "http://orca.cs.vt.edu/VTBuildingsJAX-RS/webresources/vtBuildings"
     
+    // Dictionary mapping SCNNodes to their backing Building dictionaries
+    var dict_LabelNode_BuildingDict: NSMutableDictionary = NSMutableDictionary()
+    
     // MARK - View Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -157,27 +160,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         // Reset tracking and/or remove existing anchors if consistent tracking is required
         
     }
- 
-    // MARK: - Gesture Handling Action methods
-    
-    @IBAction func userTappedScreen(_ sender: UITapGestureRecognizer) {
-        print("user tapped screen")
-        // Get the 2D point of the touch in the SceneView
-        let tapPoint: CGPoint = sender.location(in: self.sceneView)
-        
-        // Conduct the hit test on the SceneView
-        let hitTestResults: [ARHitTestResult] = sceneView.hitTest(tapPoint, types: .existingPlaneUsingExtent)
-        
-        if hitTestResults.isEmpty {
-            return
-        }
-        
-        // Pick the closest building
-        let result: ARHitTestResult = hitTestResults[0]
-        
-        print("hit test result: \(result)")
-    }
-  
+
     // MARK: - CLLocationManager Delegate Methods
 
     // New location data is available
@@ -212,8 +195,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                     testBuilding["name"] = "The Edge Apartments"
                     // -----------------------------------------------------------------
                     
-                    let dict_LabelNode_BuildingDict = NSMutableDictionary()
-                    
                     // Loop through each building in the response
                     for building in jsonArray {
                         let buildingDict = building as! NSMutableDictionary
@@ -233,7 +214,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         
                         // Create a building label node and record it and its related dictionary in another dictionary
                         let labelNode: SCNNode = createBuildingLabelNode(currentLocation, buildingLocation, distanceFromUserInMiles, buildingDict: buildingDict)
-                        dict_LabelNode_BuildingDict[labelNode] = buildingDict
+                        dict_LabelNode_BuildingDict[labelNode.name!] = buildingDict
                         
                         // Only add the building label if it doesn't already exist
                         let buildingLabelNode = sceneView.scene.rootNode.childNode(withName: labelNode.name!, recursively: false)
@@ -395,6 +376,39 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         let radiansBearing = atan2(y, x)
         
         return radiansToDegrees(radiansBearing)
+    }
+    
+    // MARK: - Gesture Handling Action methods
+    
+    @IBAction func userTappedScreen(_ sender: UITapGestureRecognizer) {
+        print("user tapped screen")
+        // Get the 2D point of the touch in the SceneView
+        let tapPoint: CGPoint = sender.location(in: self.sceneView)
+        
+        // Conduct the hit test on the SceneView
+        let hitTestResults = sceneView.hitTest(tapPoint, options: nil)
+        
+        if let tappedNode = hitTestResults.first?.node {
+            displayBuildingInfo(buildingName: tappedNode.name)
+        } else {
+            print("no results")
+        }
+    }
+    
+    func displayBuildingInfo(buildingName: String?) {
+        if buildingName == nil {
+            return
+        }
+        
+        let buildingDict: NSMutableDictionary? = dict_LabelNode_BuildingDict[buildingName!] as? NSMutableDictionary
+        let buildingDetailViewController = BuildingDetailsViewController.init(nibName: "BuildingDetails", bundle: nil)
+        let viewFromNib: UIView! = buildingDetailViewController.view
+        
+        buildingDetailViewController.buildingNameLabel.text = buildingName!
+        buildingDetailViewController.buildingDescriptionLabel.text = buildingDict?.value(forKey: "descriptionUrl") as? String
+        
+       
+        sceneView.addSubview(viewFromNib)
     }
     
     // MARK: - Show Alert message
