@@ -395,20 +395,32 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         }
     }
     
+    // Displays the building's info in an overlay
     func displayBuildingInfo(buildingName: String?) {
-        if buildingName == nil {
-            return
+        if let name = buildingName {
+            let buildingDict: NSMutableDictionary? = dict_LabelNode_BuildingDict[buildingName!] as? NSMutableDictionary
+            
+            // Create a new ViewController and pass it the selected building's data
+            let buildingDetailViewController = BuildingDetailsViewController.init(nibName: "BuildingDetails", bundle: nil)
+            let viewFromNib: UIView! = buildingDetailViewController.view
+//            buildingDetailViewController.buildingNameLabel = UILabel()
+            buildingDetailViewController.buildingNameLabel.text = name
+            
+            // Get the building's image on the main thread
+            let buildingImageUrl = URL(string: (buildingDict?.value(forKey: "imageUrl") as? String)!)
+            let imageData = try? Data(contentsOf: buildingImageUrl!)
+//          buildingDetailViewController.buildingImageview = UIImageView()
+            buildingDetailViewController.buildingImageview.image = UIImage(data: imageData!)
+            
+            // Get the building's description
+            let buildingDescriptionUrl = URL(string: (buildingDict?.value(forKey: "descriptionUrl") as? String)!)
+            let descriptionData = try? String.init(contentsOf: buildingDescriptionUrl!)
+//            buildingDetailViewController.buildingDescriptionLabel = UILabel()
+            buildingDetailViewController.buildingDescriptionLabel.text = descriptionData
+            
+            
+            sceneView.addSubview(viewFromNib)
         }
-        
-        let buildingDict: NSMutableDictionary? = dict_LabelNode_BuildingDict[buildingName!] as? NSMutableDictionary
-        let buildingDetailViewController = BuildingDetailsViewController.init(nibName: "BuildingDetails", bundle: nil)
-        let viewFromNib: UIView! = buildingDetailViewController.view
-        
-        buildingDetailViewController.buildingNameLabel.text = buildingName!
-        buildingDetailViewController.buildingDescriptionLabel.text = buildingDict?.value(forKey: "descriptionUrl") as? String
-        
-       
-        sceneView.addSubview(viewFromNib)
     }
     
     // MARK: - Show Alert message
