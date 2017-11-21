@@ -41,6 +41,14 @@
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XvY-4e-5L3">
+                    <rect key="frame" x="162.5" y="480" width="50" height="36"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                    <state key="normal" title="Close"/>
+                    <connections>
+                        <action selector="close:" destination="-1" eventType="touchUpInside" id="aui-Z7-e9K"/>
+                    </connections>
+                </button>
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
@@ -48,7 +56,9 @@
                 <constraint firstItem="F0x-dg-SDi" firstAttribute="top" secondItem="eNP-di-VxR" secondAttribute="bottom" constant="8" id="DD9-Mg-00z"/>
                 <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="F0x-dg-SDi" secondAttribute="trailing" constant="16" id="I5t-Ct-7VD"/>
                 <constraint firstItem="fd2-nj-UTV" firstAttribute="top" secondItem="F0x-dg-SDi" secondAttribute="bottom" constant="8" id="PmO-tI-Joq"/>
+                <constraint firstItem="XvY-4e-5L3" firstAttribute="top" secondItem="fd2-nj-UTV" secondAttribute="bottom" constant="8" id="SzY-ld-JBF"/>
                 <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="fd2-nj-UTV" secondAttribute="trailing" constant="16" id="dSy-cB-A8p"/>
+                <constraint firstItem="XvY-4e-5L3" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="doM-wq-WIV"/>
                 <constraint firstItem="eNP-di-VxR" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="16" id="l0Z-gp-dbk"/>
                 <constraint firstItem="fd2-nj-UTV" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="16" id="lCO-T5-gZV"/>
                 <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="eNP-di-VxR" secondAttribute="trailing" constant="16" id="opK-l5-Gnd"/>

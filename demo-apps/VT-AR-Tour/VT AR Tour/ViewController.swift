@@ -11,7 +11,7 @@ import SceneKit
 import ARKit
 import CoreLocation
 
-class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDelegate {
+class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDelegate, BuildingDetailsDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
     
@@ -24,6 +24,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     var buildingLocationNodes: [SCNNode]? = nil
     
     let vtBuildingsWSBaseUrl: String = "http://orca.cs.vt.edu/VTBuildingsJAX-RS/webresources/vtBuildings"
+    
     
     // Dictionary mapping SCNNodes to their backing Building dictionaries
     var dict_LabelNode_BuildingDict: NSMutableDictionary = NSMutableDictionary()
@@ -41,8 +42,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         }
         
         // Set up tap gesture recognizer
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(ViewController.userTappedScreen(_:)))
-        sceneView.addGestureRecognizer(tapGesture)
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(ViewController.userTappedScreen(_:)))
+        tapGestureRecognizer.cancelsTouchesInView = false // Pass touches through to subviews
+        sceneView.addGestureRecognizer(tapGestureRecognizer)
         
         // Get the user's location
         locationManager.requestWhenInUseAuthorization()
@@ -381,7 +383,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     // MARK: - Gesture Handling Action methods
     
     @IBAction func userTappedScreen(_ sender: UITapGestureRecognizer) {
-        print("user tapped screen")
+        print("user tapped \(sender.view)")
         // Get the 2D point of the touch in the SceneView
         let tapPoint: CGPoint = sender.location(in: self.sceneView)
         
@@ -402,25 +404,39 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             
             // Create a new ViewController and pass it the selected building's data
             let buildingDetailViewController = BuildingDetailsViewController.init(nibName: "BuildingDetails", bundle: nil)
+            buildingDetailViewController.delegate = self
+            
+            // NOTE: ViewController.view must be referenced at least once before referencing ANY IBOutlets in the ViewController. Referencing the `view` property implicity calls loadView(), which should never be called directly by the programmer.
             let viewFromNib: UIView! = buildingDetailViewController.view
-//            buildingDetailViewController.buildingNameLabel = UILabel()
-            buildingDetailViewController.buildingNameLabel.text = name
             
             // Get the building's image on the main thread
             let buildingImageUrl = URL(string: (buildingDict?.value(forKey: "imageUrl") as? String)!)
             let imageData = try? Data(contentsOf: buildingImageUrl!)
-//          buildingDetailViewController.buildingImageview = UIImageView()
             buildingDetailViewController.buildingImageview.image = UIImage(data: imageData!)
             
             // Get the building's description
             let buildingDescriptionUrl = URL(string: (buildingDict?.value(forKey: "descriptionUrl") as? String)!)
             let descriptionData = try? String.init(contentsOf: buildingDescriptionUrl!)
-//            buildingDetailViewController.buildingDescriptionLabel = UILabel()
             buildingDetailViewController.buildingDescriptionLabel.text = descriptionData
             
+            buildingDetailViewController.buildingNameLabel.text = name
             
-            sceneView.addSubview(viewFromNib)
+            // Stop listening for taps and display the Building
+            print("removing tap gesture recognizer")
+
+            self.addChildViewController(buildingDetailViewController)
+            self.view.addSubview(viewFromNib)
+            self.view.bringSubview(toFront: viewFromNib)
         }
+    }
+    
+    // MARK: - BuildingDetailsDelegate
+    
+    // Closes the Building Details subview. 
+    func closeBuildingDetailsView(viewController: UIViewController) {
+        print("closing details")
+        viewController.view.removeFromSuperview()
+        viewController.removeFromParentViewController()
     }
     
     // MARK: - Show Alert message

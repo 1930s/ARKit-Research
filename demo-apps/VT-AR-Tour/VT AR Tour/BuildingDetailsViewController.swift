@@ -8,11 +8,23 @@
 
 import UIKit
 
+protocol BuildingDetailsDelegate {
+    func closeBuildingDetailsView(viewController: UIViewController)
+}
+
 class BuildingDetailsViewController: UIViewController {
     
     @IBOutlet var buildingNameLabel: UILabel!
     @IBOutlet var buildingImageview: UIImageView!
     @IBOutlet var buildingDescriptionLabel: UILabel!
     
+    var delegate: BuildingDetailsDelegate?
     
+    @IBAction func close(_ sender: UIButton) {
+        print("called")
+       
+        if let buildingDetailsDelegate = delegate {
+            buildingDetailsDelegate.closeBuildingDetailsView(viewController: self)
+        }
+    }
 }
