@@ -427,29 +427,81 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             // NOTE: ViewController.view must be referenced at least once before referencing ANY IBOutlets in the ViewController. Referencing the `view` property implicity calls loadView(), which should never be called directly by the programmer.
             let viewFromNib: UIView! = buildingDetailViewController.view
             
-            // Get the building's image on the main thread
-            let buildingImageUrl = URL(string: (buildingDict?.value(forKey: "imageUrl") as? String)!)
-            let imageData = try? Data(contentsOf: buildingImageUrl!)
-            buildingDetailViewController.buildingImageview.image = UIImage(data: imageData!)
-            
-            // Get the building's description
-            let buildingDescriptionUrl = URL(string: (buildingDict?.value(forKey: "descriptionUrl") as? String)!)
-            let descriptionData = try? String.init(contentsOf: buildingDescriptionUrl!)
-            buildingDetailViewController.buildingDescriptionLabel.text = descriptionData
-            
-            buildingDetailViewController.buildingNameLabel.text = name
-            
-            // Stop listening for taps and display the Building
-            print("removing tap gesture recognizer")
+            // Get the building's image asynchronously and display it once available
+            if let imageAddress = buildingDict?.value(forKey: "imageUrl") as? String {
+                if let buildingImageUrl = URL(string: imageAddress){
+                    downloadAndDisplayImageAsync(url: buildingImageUrl, imageView: buildingDetailViewController.buildingImageview)
+                }
+            }
+        
+            // Get the building's description asynchronously and display it once available
+            if let descriptionAddress = buildingDict?.value(forKey: "descriptionUrl") as? String {
+                if let buildingDescriptionUrl = URL(string: descriptionAddress) {
+                    downloadAndDisplayLabelTextAsync(url: buildingDescriptionUrl, label: buildingDetailViewController.buildingDescriptionLabel)
+                }
+            }
 
             self.addChildViewController(buildingDetailViewController)
             
 //            self.view.addSubview(viewFromNib)
 //            self.view.bringSubview(toFront: viewFromNib)
             let buildingOverlayScene = SKScene(size: sceneView.bounds.size)
+            //buildingOverlayScene.alpha = 0 // Make the view invisible in order to fade in
             sceneView.overlaySKScene = buildingOverlayScene
+            viewFromNib.alpha = 0
             buildingOverlayScene.view!.addSubview(viewFromNib)
+            
+            UIView.animate(withDuration: 1.5, animations: { viewFromNib.alpha = 0.92 })
+            
+            
 //            fadeNodeInAndOut(node: sceneView.overlaySKScene!, initialDelay: 2.0, fadeInDuration: 1.0, displayDuration: 6.0, fadeOutDuration: 1.0)
+        }
+    }
+    
+    // MARK: - Asynchronous data downloading
+    
+    // Downloads data on a background thread and executes the passed-in closure on completion
+    func getDataFromUrlAsync(url: URL, completion: @escaping (Data?, URLResponse?, Error?) -> ()) {
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            completion(data, response, error)
+            }.resume()
+    }
+    
+    func downloadAndDisplayLabelTextAsync(url: URL, label: UILabel) {
+        var text: String?
+        
+        // Download the text and display it on completion
+        getDataFromUrlAsync(url: url) { (data, response, error) in
+            if error != nil {
+                // Download failed
+                text = "No data found"
+            } else if let data = data {
+                text = String(data: data, encoding: .utf8)
+            }
+            
+            // Display the label
+            DispatchQueue.main.async {
+                label.text = text
+            }
+        }
+    }
+    
+    func downloadAndDisplayImageAsync(url: URL, imageView: UIImageView) {
+        var image: UIImage?
+        
+        // Download the image and display it on completion
+        getDataFromUrlAsync(url: url) { (data, response, error) in
+            if error != nil {
+                // Download failed
+                image = UIImage(named: "no-image")
+            } else if let data = data {
+                image = UIImage(data: data)
+            }
+            
+            // Display the image
+            DispatchQueue.main.async {
+                imageView.image = image
+            }
         }
     }
     
@@ -459,8 +511,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     func closeBuildingDetailsView(viewController: UIViewController) {
         count -= 1 // TODO remove
         print("closing details")
-        viewController.view.removeFromSuperview()
-        viewController.removeFromParentViewController()
+        
+        // Fade out the view
+        UIView.animate(withDuration: 1.5,
+                       animations: { viewController.view.alpha = 0},
+                       completion: {(finished:Bool) in
+                        // Remove the view after the animation has completed
+                        viewController.view.removeFromSuperview()
+                        viewController.removeFromParentViewController()
+        })
     }
     
     // MARK: - Show Alert message
