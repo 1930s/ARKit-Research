@@ -425,16 +425,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             // NOTE: ViewController.view must be referenced at least once before referencing ANY IBOutlets in the ViewController. Referencing the `view` property implicity calls loadView(), which should never be called directly by the programmer.
             let viewFromNib: UIView! = buildingDetailViewController.view
             
+            // Display the building name
+            buildingDetailViewController.buildingNameLabel.text = buildingName
+            
             // Get the building's image asynchronously and display it once available
             if let imageAddress = buildingDict?.value(forKey: "imageUrl") as? String {
                 if let buildingImageUrl = URL(string: imageAddress){
                     // Display a loading indicator while the image is downloading
-                    let loadingIndicator = UIActivityIndicatorView()
-                    loadingIndicator.center = buildingDetailViewController.buildingImageview.center
-                    buildingDetailViewController.view.addSubview(loadingIndicator)
-                    loadingIndicator.startAnimating()
-                    
-                    downloadAndDisplayImageAsync(url: buildingImageUrl, imageView: buildingDetailViewController.buildingImageview, loadingIndicator: loadingIndicator)
+                    downloadAndDisplayImageAsync(url: buildingImageUrl, imageView: buildingDetailViewController.buildingImageview)
                 }
             }
         
@@ -453,6 +451,18 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             buildingOverlayScene.view!.addSubview(viewFromNib)
             UIView.animate(withDuration: 1.5, animations: { viewFromNib.alpha = 0.92 })
         }
+    }
+    
+    func createAndShowLoadingIndicator(addToView: UIView) -> UIActivityIndicatorView {
+        let loadingIndicator = UIActivityIndicatorView()
+        
+        // Add the loading indicator at the center of the view and begin the loading animation
+        loadingIndicator.center = CGPoint(x: addToView.frame.size.width  / 2,
+                                          y: addToView.frame.size.height / 2);
+        addToView.addSubview(loadingIndicator)
+        loadingIndicator.startAnimating()
+        
+        return loadingIndicator
     }
     
     // MARK: - Asynchronous data downloading
@@ -483,8 +493,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         }
     }
     
-    func downloadAndDisplayImageAsync(url: URL, imageView: UIImageView, loadingIndicator: UIActivityIndicatorView) {
+    func downloadAndDisplayImageAsync(url: URL, imageView: UIImageView) {
         var image: UIImage?
+        
+        let loadingIndicator = createAndShowLoadingIndicator(addToView: imageView)
         
         // Download the image and display it on completion
         getDataFromUrlAsync(url: url) { (data, response, error) in
