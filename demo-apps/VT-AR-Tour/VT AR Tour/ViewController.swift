@@ -386,16 +386,17 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     var count = 0
     
     @IBAction func userTappedScreen(_ sender: UITapGestureRecognizer) {
-        // TODO remove--for debugging only
-        if dict_LabelNode_BuildingDict.count > 0 && count < 1 {
-            print("displaying building information")
-            displayBuildingInfo(buildingName: "Surge Space Building")
-            count+=1
-            return
-        } else {
-            print("nothing in the dict yet")
-            return
-        }
+        // TODO for debugging
+        //-------------------
+//        if dict_LabelNode_BuildingDict.count > 0 && count < 1 {
+//            print("displaying building information")
+//            displayBuildingInfo(buildingName: "Surge Space Building")
+//            count+=1
+//            return
+//        } else {
+//            print("nothing in the dict yet")
+//            return
+        //}
         // ------------------
         
         print("user tapped \(String(describing: sender.view))")
@@ -411,13 +412,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             print("no results")
         }
     }
-    
-    
 
-    
     // Displays the building's info in an overlay
     func displayBuildingInfo(buildingName: String?) {
-        if let name = buildingName {
+        if buildingName != nil {
             let buildingDict: NSMutableDictionary? = dict_LabelNode_BuildingDict[buildingName!] as? NSMutableDictionary
             
             // Create a new ViewController and pass it the selected building's data
@@ -430,7 +428,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             // Get the building's image asynchronously and display it once available
             if let imageAddress = buildingDict?.value(forKey: "imageUrl") as? String {
                 if let buildingImageUrl = URL(string: imageAddress){
-                    downloadAndDisplayImageAsync(url: buildingImageUrl, imageView: buildingDetailViewController.buildingImageview)
+                    // Display a loading indicator while the image is downloading
+                    let loadingIndicator = UIActivityIndicatorView()
+                    loadingIndicator.center = buildingDetailViewController.buildingImageview.center
+                    buildingDetailViewController.view.addSubview(loadingIndicator)
+                    loadingIndicator.startAnimating()
+                    
+                    downloadAndDisplayImageAsync(url: buildingImageUrl, imageView: buildingDetailViewController.buildingImageview, loadingIndicator: loadingIndicator)
                 }
             }
         
@@ -442,19 +446,12 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             }
 
             self.addChildViewController(buildingDetailViewController)
-            
-//            self.view.addSubview(viewFromNib)
-//            self.view.bringSubview(toFront: viewFromNib)
+
             let buildingOverlayScene = SKScene(size: sceneView.bounds.size)
-            //buildingOverlayScene.alpha = 0 // Make the view invisible in order to fade in
             sceneView.overlaySKScene = buildingOverlayScene
             viewFromNib.alpha = 0
             buildingOverlayScene.view!.addSubview(viewFromNib)
-            
             UIView.animate(withDuration: 1.5, animations: { viewFromNib.alpha = 0.92 })
-            
-            
-//            fadeNodeInAndOut(node: sceneView.overlaySKScene!, initialDelay: 2.0, fadeInDuration: 1.0, displayDuration: 6.0, fadeOutDuration: 1.0)
         }
     }
     
@@ -486,7 +483,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         }
     }
     
-    func downloadAndDisplayImageAsync(url: URL, imageView: UIImageView) {
+    func downloadAndDisplayImageAsync(url: URL, imageView: UIImageView, loadingIndicator: UIActivityIndicatorView) {
         var image: UIImage?
         
         // Download the image and display it on completion
@@ -500,6 +497,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             
             // Display the image
             DispatchQueue.main.async {
+                loadingIndicator.stopAnimating()
+                loadingIndicator.removeFromSuperview()
                 imageView.image = image
             }
         }
