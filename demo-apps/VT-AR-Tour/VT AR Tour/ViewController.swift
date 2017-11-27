@@ -388,15 +388,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     @IBAction func userTappedScreen(_ sender: UITapGestureRecognizer) {
         // TODO for debugging
         //-------------------
-//        if dict_LabelNode_BuildingDict.count > 0 && count < 1 {
-//            print("displaying building information")
-//            displayBuildingInfo(buildingName: "Surge Space Building")
-//            count+=1
-//            return
-//        } else {
-//            print("nothing in the dict yet")
-//            return
-        //}
+        if dict_LabelNode_BuildingDict.count > 0 && count < 1 {
+            print("displaying building information")
+            displayBuildingInfo(buildingName: "Surge Space Building")
+            count+=1
+            return
+        } else {
+            print("nothing in the dict yet")
+            return
+        }
         // ------------------
         
         print("user tapped \(String(describing: sender.view))")
