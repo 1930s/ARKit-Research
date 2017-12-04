@@ -388,23 +388,23 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     @IBAction func userTappedScreen(_ sender: UITapGestureRecognizer) {
         // TODO for debugging
         //-------------------
-        if dict_LabelNode_BuildingDict.count > 0 && count < 1 {
-            print("displaying building information")
-            displayBuildingInfo(buildingName: "Surge Space Building")
-            count+=1
-            return
-        } else {
-            print("nothing in the dict yet")
-            return
-        }
+//        if dict_LabelNode_BuildingDict.count > 0 && count < 1 {
+//            print("displaying building information")
+//            displayBuildingInfo(buildingName: "Surge Space Building")
+//            count+=1
+//            return
+//        } else {
+//            print("nothing in the dict yet")
+//            return
+//        }
         // ------------------
         
-        print("user tapped \(String(describing: sender.view))")
+        //print("user tapped \(String(describing: sender.view))")
         // Get the 2D point of the touch in the SceneView
         let tapPoint: CGPoint = sender.location(in: self.sceneView)
         
         // Conduct the hit test on the SceneView
-        let hitTestResults = sceneView.hitTest(tapPoint, options: nil)
+        let hitTestResults = sceneView.hitTest(tapPoint, options: [.boundingBoxOnly: true])
         
         if let tappedNode = hitTestResults.first?.node {
             displayBuildingInfo(buildingName: tappedNode.name)

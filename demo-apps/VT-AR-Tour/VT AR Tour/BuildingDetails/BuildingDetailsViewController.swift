@@ -12,7 +12,7 @@ protocol BuildingDetailsDelegate {
     func closeBuildingDetailsView(viewController: UIViewController)
 }
 
-class BuildingDetailsViewController: UIViewController, UIScrollViewDelegate {
+class BuildingDetailsViewController: UIViewController {
     
     @IBOutlet var buildingNameLabel: UILabel!
     @IBOutlet var buildingImageview: UIImageView!
@@ -22,16 +22,8 @@ class BuildingDetailsViewController: UIViewController, UIScrollViewDelegate {
     var delegate: BuildingDetailsDelegate?
     
     @IBAction func close(_ sender: UIButton) {
-        print("called")
-       
         if let buildingDetailsDelegate = delegate {
             buildingDetailsDelegate.closeBuildingDetailsView(viewController: self)
         }
-    }
-    
-    // MARK: - UIScrollViewDelegate methods
-    
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        print("scrolling")
     }
 }
