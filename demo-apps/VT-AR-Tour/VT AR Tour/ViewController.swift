@@ -24,8 +24,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     var buildingLocationNodes: [SCNNode]? = nil
     
     let vtBuildingsWSBaseUrl: String = "http://orca.cs.vt.edu/VTBuildingsJAX-RS/webresources/vtBuildings"
-    
-    
+        
     // Dictionary mapping SCNNodes to their backing Building dictionaries
     var dict_LabelNode_BuildingDict: NSMutableDictionary = NSMutableDictionary()
     
@@ -87,6 +86,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         return overlayScene
     }
     
+    // MARK - Node animations
     func fadeNodeInAndOut(node: SKNode, initialDelay: Double, fadeInDuration: Double, displayDuration: Double, fadeOutDuration: Double) {
         // Fade in the label
         node.run(SKAction.sequence([
@@ -124,6 +124,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         locationManager.startUpdatingHeading()
     }
     
+    // MARK - View life cycle
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         let configuration = ARWorldTrackingConfiguration()
@@ -148,106 +150,103 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     }
 
     // MARK: - ARSCNViewDelegate
+    
     func session(_ session: ARSession, didFailWithError error: Error) {
-        // Present an error message to the user
-        
+        showAlertMessage(title: "AR Session failed!", message: "Here's what went wrong: \(error.localizedDescription)")
     }
-    
-    func sessionWasInterrupted(_ session: ARSession) {
-        // Inform the user that the session has been interrupted, for example, by presenting an overlay
-        
-    }
-    
-    func sessionInterruptionEnded(_ session: ARSession) {
-        // Reset tracking and/or remove existing anchors if consistent tracking is required
-        
-    }
+
 
     // MARK: - CLLocationManager Delegate Methods
 
     // New location data is available
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        // Need to wait until at least one heading update comes through. If we proceed before this, our coordinate system won't be set up correctly
-        if manager.heading?.magneticHeading == nil {
-            return
+        //  Must wait until at least one heading update comes through. If we proceed before this, our coordinate system won't be set up correctly
+        guard (manager.heading?.magneticHeading) != nil else { return }
+        
+        // Don't process any further without the user's current location
+        guard let currentLocation: CLLocation = locations.last else { return }
+    
+        //print("Current location: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude) location size: \(locations.count)")
+        
+        // Fetch the VT Buildings JSON if necessary
+        if jsonInDocumentDirectory == nil {
+            jsonInDocumentDirectory = getVTBuildingsJSON()
         }
         
-        if let currentLocation: CLLocation = locations.last {
-            print("Current location: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude) location size: \(locations.count)")
-            // Fetch the VT Buildings JSON if necessary
-            if jsonInDocumentDirectory == nil {
-                jsonInDocumentDirectory = getVTBuildingsJSON()
-            }
-            
-            if let jsonDataFromApi = jsonInDocumentDirectory {
-                // Getting the JSON was successful
-                do {
-                    let jsonArray = try JSONSerialization.jsonObject(with: jsonDataFromApi, options: .mutableContainers) as! NSArray
-                    
-                    if buildingLocationNodes == nil {
-                        buildingLocationNodes = [SCNNode]()
-                    }
-                    
-                    // TODO remove: example building
-                    // -----------------------------------------------------------------
-                    let testBuilding = jsonArray.firstObject as! NSMutableDictionary
-                    // coordinates of The Edge Apartments
-                    testBuilding["latitude"] = 37.236218
-                    testBuilding["longitude"] = -80.423803
-                    testBuilding["name"] = "The Edge Apartments"
-                    print("distance of the edge from user: \(distanceBetweenPointsInMiles(lat1: testBuilding.value(forKey: "latitude") as! Double, long1: testBuilding.value(forKey: "longitude") as! Double, lat2: currentLocation.coordinate.latitude, long2: currentLocation.coordinate.longitude))")
-                    // -----------------------------------------------------------------
-                    
-                    // Loop through each building in the response
-                    for building in jsonArray {
-                        let buildingDict = building as! NSMutableDictionary
-                        let buildingLocation: CLLocation = CLLocation(latitude: buildingDict["latitude"]! as! CLLocationDegrees, longitude: buildingDict["longitude"]! as! CLLocationDegrees)
-                        
-                        // Compute the distance between the user's current location and the building's location
-                        let distanceFromUserInMiles: Double = distanceBetweenPointsInMiles(lat1: currentLocation.coordinate.latitude, long1: currentLocation.coordinate.longitude, lat2: buildingLocation.coordinate.latitude, long2: buildingLocation.coordinate.longitude)
-                       
-                        if (distanceFromUserInMiles >= 0.25) {
-                            // Disregard buildings that are too far away
-                            continue
-                        }
-//                         print("distance from user in miles: \(distanceFromUserInMiles)")
-                        
-                        // Record how far the building is from the user.
-                        buildingDict["distanceFromUser"] = distanceFromUserInMiles
-                        
-                        
-                        // Create a building label node and record it and its related dictionary in another dictionary
-                        let labelNode: SCNNode = createBuildingLabelNode(currentLocation, buildingLocation, distanceFromUserInMiles, buildingDict: buildingDict)
-                        dict_LabelNode_BuildingDict[labelNode.name!] = buildingDict
-                        
-                        // If the user is close to the building, create a BuildingDetailsView embedded in a SCNNode
-                        var buildingDetailsPlaneNode: SCNNode?
-                        var buildingDetailsNodeName = ""
-                        if distanceFromUserInMiles <= 0.1, let buildingDict: NSMutableDictionary = dict_LabelNode_BuildingDict[labelNode.name!] as? NSMutableDictionary {
-                            buildingDetailsPlaneNode = createPopulatedBuildingDetailsSCNNode(buildingDict: buildingDict, anchor: labelNode.position)
-                            buildingDetailsPlaneNode?.name = "\(labelNode.name!)-detailsNode"
-                            buildingDetailsNodeName = (buildingDetailsPlaneNode?.name!)!
-                        }
-                        
-                        // Only add the building label if it doesn't already exist
-                        let existingBuildingLabelNode = sceneView.scene.rootNode.childNode(withName: labelNode.name!, recursively: false)
-                        
-                        // Only add the building details if the user is close to the building
-                        let existingBuildingDetailsNode = sceneView.scene.rootNode.childNode(withName: buildingDetailsNodeName, recursively: false)
-                        
-                        if (existingBuildingLabelNode == nil) {
-                            sceneView.scene.rootNode.addChildNode(labelNode)
-                        }  else if (existingBuildingDetailsNode == nil && buildingDetailsPlaneNode != nil) {
-                            sceneView.scene.rootNode.addChildNode(buildingDetailsPlaneNode!)
-                        } else {
-                            // show the name label
-                        }
-                    }
-                    // TODO Prevent labels from rendering "on top"/"in front" of each other. You can't read it if this happens.
-                } catch let error as NSError {
-                    showAlertMessage(title: "Error in JSON serialization", message: error.localizedDescription)
+        if let jsonDataFromApi = jsonInDocumentDirectory {
+            // Getting the JSON was successful
+            do {
+                let jsonArray = try JSONSerialization.jsonObject(with: jsonDataFromApi, options: .mutableContainers) as! NSArray
+                
+                if buildingLocationNodes == nil {
+                    buildingLocationNodes = [SCNNode]()
                 }
+                
+                // TODO remove (example building)
+                // -----------------------------------------------------------------
+                let testBuilding = jsonArray.firstObject as! NSMutableDictionary
+                // coordinates of The Edge Apartments
+                testBuilding["latitude"] = 37.236218
+                testBuilding["longitude"] = -80.423803
+                testBuilding["name"] = "The Edge Apartments"
+                print("distance of the edge from user: \(distanceBetweenPointsInMiles(lat1: testBuilding.value(forKey: "latitude") as! Double, long1: testBuilding.value(forKey: "longitude") as! Double, lat2: currentLocation.coordinate.latitude, long2: currentLocation.coordinate.longitude))")
+                // -----------------------------------------------------------------
+                
+                // Loop through each building in the response
+                for building in jsonArray {
+                    processBuilding(building, currentLocation)
+                }
+            } catch let error as NSError {
+                showAlertMessage(title: "Error in JSON serialization", message: error.localizedDescription)
             }
+        }
+    }
+    
+    /*
+     * Creates a building dictionary, computes the building's location in the SceneView,
+     * and displays appropriate data about the building
+     */
+    func processBuilding(_ building: Any, _ currentLocation: CLLocation) {
+        let buildingDict = building as! NSMutableDictionary
+        let buildingLocation: CLLocation = CLLocation(latitude: buildingDict["latitude"]! as! CLLocationDegrees, longitude: buildingDict["longitude"]! as! CLLocationDegrees)
+        
+        // Compute the distance between the user's current location and the building's location
+        let distanceFromUserInMiles: Double = distanceBetweenPointsInMiles(lat1: currentLocation.coordinate.latitude, long1: currentLocation.coordinate.longitude, lat2: buildingLocation.coordinate.latitude, long2: buildingLocation.coordinate.longitude)
+        
+        // Disregard buildings that are too far away
+        if (distanceFromUserInMiles >= 0.25) {
+            return
+        }
+        //print("distance from user in miles: \(distanceFromUserInMiles)")
+        
+        // Record how far the building is from the user.
+        buildingDict["distanceFromUser"] = distanceFromUserInMiles
+        
+        // Create a building label node and record it and its related dictionary in another dictionary
+        let labelNode: SCNNode = createBuildingLabelNode(currentLocation, buildingLocation, distanceFromUserInMiles, buildingDict: buildingDict)
+        dict_LabelNode_BuildingDict[labelNode.name!] = buildingDict
+        
+        // If the user is close to the building, create a BuildingDetailsView embedded in a SCNNode
+        let detailsMaxDistance = 0.1 // miles
+        var buildingDetailsPlaneNode: SCNNode?
+        let buildingDetailsNodeName = "\(labelNode.name!)-detailsNode"
+        if distanceFromUserInMiles <= detailsMaxDistance, let buildingDict: NSMutableDictionary = dict_LabelNode_BuildingDict[labelNode.name!] as? NSMutableDictionary {
+            buildingDetailsPlaneNode = createPopulatedBuildingDetailsSCNNode(buildingDict: buildingDict, anchor: labelNode.position)
+            buildingDetailsPlaneNode?.name = buildingDetailsNodeName
+        }
+        
+        // Check if the building label and the building details are already rendered in the scene
+        let existingBuildingLabelNode = sceneView.scene.rootNode.childNode(withName: labelNode.name!, recursively: false)
+        let existingBuildingDetailsNode = sceneView.scene.rootNode.childNode(withName: buildingDetailsNodeName, recursively: false)
+        
+        if (existingBuildingLabelNode == nil) {
+            sceneView.scene.rootNode.addChildNode(labelNode)
+        }  else if (existingBuildingDetailsNode == nil && buildingDetailsPlaneNode != nil) {
+            sceneView.scene.rootNode.addChildNode(buildingDetailsPlaneNode!)
+            existingBuildingLabelNode?.opacity = 0
+        } else if distanceFromUserInMiles > detailsMaxDistance {
+            existingBuildingDetailsNode?.opacity = 0
+            existingBuildingLabelNode?.opacity = 1.0
         }
     }
 
