@@ -33,4 +33,14 @@ class BuildingDetailsViewController: UIViewController {
         view.layer.cornerRadius = 20;
         view.layer.masksToBounds = true;
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+//        var contentRect = CGRect.zero
+//        for view in scrollView.subviews {
+//            contentRect = contentRect.union(view.frame)
+//        }
+//        scrollView.contentSize = contentRect.size
+//        scrollView.translatesAutoresizingMaskIntoConstraints = false
+//        buildingDescriptionLabel.translatesAutoresizingMaskIntoConstraints = false
+    }
 }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B824472B1FD5E6C5001DE9A2 /* BuildingDetails.xib in Resources */ = {isa = PBXBuildFile; fileRef = B824472A1FD5E6C4001DE9A2 /* BuildingDetails.xib */; };
 		B82D959D1FA8D250000CEEE4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82D959C1FA8D250000CEEE4 /* AppDelegate.swift */; };
 		B82D959F1FA8D250000CEEE4 /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = B82D959E1FA8D250000CEEE4 /* art.scnassets */; };
 		B82D95A11FA8D250000CEEE4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B82D95A01FA8D250000CEEE4 /* ViewController.swift */; };
@@ -37,6 +38,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		B824472A1FD5E6C4001DE9A2 /* BuildingDetails.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BuildingDetails.xib; sourceTree = "<group>"; };
 		B82D95991FA8D250000CEEE4 /* VT AR Tour.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "VT AR Tour.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B82D959C1FA8D250000CEEE4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B82D959E1FA8D250000CEEE4 /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
@@ -52,7 +54,6 @@
 		B82D95BE1FA8D250000CEEE4 /* VT_AR_TourUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VT_AR_TourUITests.swift; sourceTree = "<group>"; };
 		B82D95C01FA8D250000CEEE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B8475D3A1FB9430D009C6D3B /* MatrixHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MatrixHelper.swift; sourceTree = "<group>"; };
-		B8CC2E891FD4E66900FBEEB8 /* BuildingDetails.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BuildingDetails.xib; sourceTree = "<group>"; };
 		B8CC2E8A1FD4E67000FBEEB8 /* BuildingDetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildingDetailsViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -138,8 +139,8 @@
 		B8CC2E881FD4E63500FBEEB8 /* BuildingDetails */ = {
 			isa = PBXGroup;
 			children = (
+				B824472A1FD5E6C4001DE9A2 /* BuildingDetails.xib */,
 				B8CC2E8A1FD4E67000FBEEB8 /* BuildingDetailsViewController.swift */,
-				B8CC2E891FD4E66900FBEEB8 /* BuildingDetails.xib */,
 			);
 			path = BuildingDetails;
 			sourceTree = "<group>";
@@ -252,6 +253,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B82D959F1FA8D250000CEEE4 /* art.scnassets in Resources */,
+				B824472B1FD5E6C5001DE9A2 /* BuildingDetails.xib in Resources */,
 				B82D95A91FA8D250000CEEE4 /* LaunchScreen.storyboard in Resources */,
 				B82D95A61FA8D250000CEEE4 /* Assets.xcassets in Resources */,
 				B82D95A41FA8D250000CEEE4 /* Main.storyboard in Resources */,
