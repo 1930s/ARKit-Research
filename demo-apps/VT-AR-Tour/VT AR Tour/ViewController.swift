@@ -15,20 +15,19 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
 
     @IBOutlet var sceneView: ARSCNView!
     
+    let vtBuildingsWSBaseUrl: String = "http://orca.cs.vt.edu/VTBuildingsJAX-RS/webresources/vtBuildings"
+    
     // A strong reference to CLLocationManager is required by the CoreLocation API.
     var locationManager = CLLocationManager()
     
     // JSON read from the Document directory
     var jsonInDocumentDirectory: Data? = nil
-    
-    var buildingLocationNodes: [SCNNode]? = nil
-    
-    let vtBuildingsWSBaseUrl: String = "http://orca.cs.vt.edu/VTBuildingsJAX-RS/webresources/vtBuildings"
         
     // Dictionary mapping SCNNodes to their backing Building dictionaries
     var dict_LabelNode_BuildingDict: NSMutableDictionary = NSMutableDictionary()
     
-    // MARK - View Life Cycle
+    // MARK: - View Life Cycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         sceneView.delegate = self
@@ -36,7 +35,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         // User must enable location services to use this app
         if !CLLocationManager.locationServicesEnabled() {
             showAlertMessage(title: "Location Services Disabled", message: "You must enable location services to use this app")
-            
             return
         }
         
@@ -86,46 +84,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         return overlayScene
     }
     
-    // MARK - Node animations
-    func fadeNodeInAndOut(node: SKNode, initialDelay: Double, fadeInDuration: Double, displayDuration: Double, fadeOutDuration: Double) {
-        // Fade in the label
-        node.run(SKAction.sequence([
-            .wait(forDuration: initialDelay),
-            .fadeIn(withDuration: fadeInDuration)]))
-        
-        // Wait and fade out the label
-        node.run(SKAction.sequence([
-            .wait(forDuration: displayDuration),
-            .fadeOut(withDuration: fadeOutDuration),
-            .removeFromParent()]))
-    }
-    
-    func getLocation() {
-        // The user has not authorized location monitoring
-        if (CLLocationManager.authorizationStatus() == .denied) {
-            showAlertMessage(title: "App Not Authorized", message: "Unable to determine your location: please allow VT AR Tour to use your location.")
-            
-            // Try to get location authorization again
-            locationManager.requestWhenInUseAuthorization()
-            
-            return
-        }
-        
-        locationManager.delegate = self
-        
-        // TODO for debugging. Can choose a less accurate filter later.
-        // Report ALL device movement
-        locationManager.distanceFilter = kCLDistanceFilterNone
-        
-        // Get the highest possible degree of accuracy
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        
-        locationManager.startUpdatingLocation()
-        locationManager.startUpdatingHeading()
-    }
-    
-    // MARK - View life cycle
-    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         let configuration = ARWorldTrackingConfiguration()
@@ -143,20 +101,39 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         // Pause the view's session
         sceneView.session.pause()
     }
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Release any cached data, images, etc that aren't in use.
-    }
 
     // MARK: - ARSCNViewDelegate
     
     func session(_ session: ARSession, didFailWithError error: Error) {
         showAlertMessage(title: "AR Session failed!", message: "Here's what went wrong: \(error.localizedDescription)")
     }
+    
+    // MARK: - Location Methods
 
-
-    // MARK: - CLLocationManager Delegate Methods
+    func getLocation() {
+        // The user has not authorized location monitoring
+        if (CLLocationManager.authorizationStatus() == .denied) {
+            showAlertMessage(title: "App Not Authorized", message: "Unable to determine your location: please allow VT AR Tour to use your location.")
+            
+            // Try to get location authorization again
+            locationManager.requestWhenInUseAuthorization()
+            
+            return
+        }
+        
+        locationManager.delegate = self
+        
+        // Report ALL device movement
+        locationManager.distanceFilter = kCLDistanceFilterNone
+        
+        // Get the highest possible degree of accuracy
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        
+        locationManager.startUpdatingLocation()
+        locationManager.startUpdatingHeading()
+    }
+    
+    // MARK: CLLocationManager Delegate
 
     // New location data is available
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -177,10 +154,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             // Getting the JSON was successful
             do {
                 let jsonArray = try JSONSerialization.jsonObject(with: jsonDataFromApi, options: .mutableContainers) as! NSArray
-                
-                if buildingLocationNodes == nil {
-                    buildingLocationNodes = [SCNNode]()
-                }
                 
                 // TODO remove (example building)
                 // -----------------------------------------------------------------
@@ -217,7 +190,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         if (distanceFromUserInMiles >= 0.25) {
             return
         }
-        //print("distance from user in miles: \(distanceFromUserInMiles)")
         
         // Record how far the building is from the user.
         buildingDict["distanceFromUser"] = distanceFromUserInMiles
@@ -249,14 +221,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             existingBuildingLabelNode?.opacity = 1.0
         }
     }
-
-    // New heading information available
-    func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
-        //print("User is facing: \(newHeading.magneticHeading)")
-        return
-    }
     
-    // MARK: Get JSON Data
+    // MARK: - JSON Methods
     
     // Gets the VT Buildings JSON from the device's cache or from the
     func getVTBuildingsJSON() -> Data? {
@@ -321,12 +287,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         let buildingARLocationPositionColumn = buildingARLocation.columns.3
         let targetPosition: SCNVector3 = SCNVector3Make(buildingARLocationPositionColumn.x, buildingARLocationPositionColumn.y /* + vertical offset would go here */, buildingARLocationPositionColumn.z)
         
+        let buildingName: String = buildingDict.value(forKey: "name") as! String
+        
         // Create building label
         let labelGeometry = SCNText()
-        labelGeometry.string = buildingDict.value(forKey: "name")
+        labelGeometry.string = buildingName
         
+        // Add required SCNNode wrapper
         let labelNode = SCNNode(geometry: labelGeometry)
-        let buildingName: String = buildingDict.value(forKey: "name") as! String
+       
         labelNode.name = buildingName
         labelNode.position = targetPosition
         
@@ -338,21 +307,22 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     }
     
     // MARK: - Degrees <--> Radians conversion functions
+    
     func degreesToRadians(_ degrees: Double) -> Double { return degrees * .pi / 180.0 }
     func radiansToDegrees(_ radians: Double) -> Double { return radians * 180.0 / .pi }
     
-    // MARK: - Haversine formula
+    // MARK: - Position math (lat/long; matrix, etc)
+    
+    // MARK: Haversine formula
     // Calculates the distance between two lat/long coordinates in miles.
     // Modified from https://gist.github.com/Jamonek/16ecda78cebcd0da5862
     func distanceBetweenPointsInMiles(lat1: Double, long1: Double, lat2: Double, long2: Double) -> Double {
         let radius: Double = 3959.0 // Average radius of the Earth in miles
-        
         let deltaP = degreesToRadians(lat2) - degreesToRadians(lat1)
         let deltaL = degreesToRadians(long2) - degreesToRadians(long1)
         let a = sin(deltaP/2) * sin(deltaP/2) + cos(degreesToRadians(lat1)) * cos(degreesToRadians(lat2)) * sin(deltaL/2) * sin(deltaL/2)
         let c = 2 * atan2(sqrt(a), sqrt(1-a))
         let d = radius * c
-        
         return d
     }
     
@@ -379,7 +349,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         return simd_mul(originTransform, transformMatrix)
     }
     
-    // MARK - Bearing between two points
     // Adapted from https://stackoverflow.com/questions/26998029/calculating-bearing-between-two-cllocation-points-in-swift
     func getBearingBetweenPoints(point1 : CLLocation, point2 : CLLocation) -> Double {
         
@@ -398,41 +367,22 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         return radiansToDegrees(radiansBearing)
     }
     
-    // MARK: - Gesture Handling Action methods
-    
-    //TODO remove
-    var count = 0
+    // MARK: - Gesture Handling
     
     @IBAction func userTappedScreen(_ sender: UITapGestureRecognizer) {
-        // TODO for debugging
-        //-------------------
-//        if dict_LabelNode_BuildingDict.count > 0 && count < 1 {
-//            print("displaying building information")
-//            displayBuildingInfo(buildingName: "Surge Space Building")
-//            count+=1
-//            return
-//        } else {
-//            print("nothing in the dict yet")
-//            return
-//        }
-        // ------------------
-        
-        //print("user tapped \(String(describing: sender.view))")
         // Get the 2D point of the touch in the SceneView
         let tapPoint: CGPoint = sender.location(in: self.sceneView)
         
         // Conduct the hit test on the SceneView
         let hitTestResults = sceneView.hitTest(tapPoint, options: [.boundingBoxOnly: true])
         
-        if let tappedNode = hitTestResults.first?.node {
-            if let buildingDict: NSMutableDictionary? = dict_LabelNode_BuildingDict[tappedNode.name] as? NSMutableDictionary {
-                // 
-//                let buildingDetailsPlaneNode = createPopulatedBuildingDetailsSCNNode(buildingDict: buildingDict!, anchor: tappedNode.position)
-//                sceneView.scene.rootNode.addChildNode(buildingDetailsPlaneNode)
+        // If the hit test contains a building label and we know additional information about the building, display it
+        if let tappedNode = hitTestResults.first?.node, let _: NSMutableDictionary = dict_LabelNode_BuildingDict[tappedNode.name as Any] as? NSMutableDictionary {
                  displayBuildingInfo(buildingName: tappedNode.name)
-            }
         }
     }
+    
+    // MARK: - Building Details
     
     /*
      * Creates a SCNNode that contains a BuildingDetails ViewController and positions it at
@@ -476,6 +426,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         }
     }
     
+    // Create a BuildingDetailsController and populate it asynchronously with data from the API
     func createBuildingDetailsViewControllerFromDict(buildingDict: NSMutableDictionary?) -> BuildingDetailsViewController {
         // Create a new ViewController and pass it the selected building's data
         let buildingDetailViewController = BuildingDetailsViewController.init(nibName: "BuildingDetails", bundle: nil)
@@ -488,23 +439,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         buildingDetailViewController.buildingNameLabel.text = buildingDict?.value(forKey: "name") as? String
         
         // Get the building's image asynchronously and display it once available
-        if let imageAddress = buildingDict?.value(forKey: "imageUrl") as? String {
-            if let buildingImageUrl = URL(string: imageAddress){
-                // Display a loading indicator while the image is downloading
+        if let imageAddress = buildingDict?.value(forKey: "imageUrl") as? String,
+            let buildingImageUrl = URL(string: imageAddress) {
                 downloadAndDisplayImageAsync(url: buildingImageUrl, imageView: buildingDetailViewController.buildingImageview)
-            }
         }
         
         // Get the building's description asynchronously and display it once available
-        if let descriptionAddress = buildingDict?.value(forKey: "descriptionUrl") as? String {
-            if let buildingDescriptionUrl = URL(string: descriptionAddress) {
+        if let descriptionAddress = buildingDict?.value(forKey: "descriptionUrl") as? String,
+            let buildingDescriptionUrl = URL(string: descriptionAddress) {
                 downloadAndDisplayLabelTextAsync(url: buildingDescriptionUrl, label: buildingDetailViewController.buildingDescriptionLabel)
-            }
         }
 
         return buildingDetailViewController
     }
     
+    // Create loading indicator and add it to the passed in view.
     func createAndShowLoadingIndicator(addToView: UIView) -> UIActivityIndicatorView {
         let loadingIndicator = UIActivityIndicatorView()
         
@@ -526,6 +475,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             }.resume()
     }
     
+    // Download a String on a background thread and display it in the passed in UILabel once completed
     func downloadAndDisplayLabelTextAsync(url: URL, label: UILabel) {
         var text: String?
         
@@ -544,10 +494,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             }
         }
     }
-    
+     // Download an image on a background thread and display it in the passed in UIImageView once completed
     func downloadAndDisplayImageAsync(url: URL, imageView: UIImageView) {
         var image: UIImage?
-        
         let loadingIndicator = createAndShowLoadingIndicator(addToView: imageView)
         
         // Download the image and display it on completion
@@ -572,8 +521,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     
     // Closes the Building Details subview. 
     func closeBuildingDetailsView(viewController: UIViewController) {
-        count -= 1 // TODO remove
-        print("closing details")
         
         // Fade out the view
         UIView.animate(withDuration: 1.5,
@@ -583,6 +530,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         viewController.view.removeFromSuperview()
                         viewController.removeFromParentViewController()
         })
+    }
+    
+    // MARK: - Node animations
+    func fadeNodeInAndOut(node: SKNode, initialDelay: Double, fadeInDuration: Double, displayDuration: Double, fadeOutDuration: Double) {
+        // Fade in the label
+        node.run(SKAction.sequence([
+            .wait(forDuration: initialDelay),
+            .fadeIn(withDuration: fadeInDuration)]))
+        
+        // Wait and fade out the label
+        node.run(SKAction.sequence([
+            .wait(forDuration: displayDuration),
+            .fadeOut(withDuration: fadeOutDuration),
+            .removeFromParent()]))
     }
     
     // MARK: - Show Alert message
