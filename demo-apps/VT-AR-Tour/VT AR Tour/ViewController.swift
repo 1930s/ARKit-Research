@@ -192,9 +192,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                     // -----------------------------------------------------------------
                     let testBuilding = jsonArray.firstObject as! NSMutableDictionary
                     // coordinates of The Edge Apartments
-                    testBuilding["latitude"] = currentLocation.coordinate.latitude.binade
-                    testBuilding["longitude"] = currentLocation.coordinate.longitude.binade
+                    testBuilding["latitude"] = 37.236218
+                    testBuilding["longitude"] = -80.423803
                     testBuilding["name"] = "The Edge Apartments"
+                    print("distance of the edge from user: \(distanceBetweenPointsInMiles(lat1: testBuilding.value(forKey: "latitude") as! Double, long1: testBuilding.value(forKey: "longitude") as! Double, lat2: currentLocation.coordinate.latitude, long2: currentLocation.coordinate.longitude))")
                     // -----------------------------------------------------------------
                     
                     // Loop through each building in the response
@@ -204,9 +205,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         
                         // Compute the distance between the user's current location and the building's location
                         let distanceFromUserInMiles: Double = distanceBetweenPointsInMiles(lat1: currentLocation.coordinate.latitude, long1: currentLocation.coordinate.longitude, lat2: buildingLocation.coordinate.latitude, long2: buildingLocation.coordinate.longitude)
-                        
-                        // TODO: changed for debug. Later determine like .25 miles away or something
-                        if (distanceFromUserInMiles >= 9999) {
+                       
+                        if (distanceFromUserInMiles >= 0.25) {
                             continue
                         }
 //                         print("distance from user in miles: \(distanceFromUserInMiles)")
@@ -307,6 +307,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         // Create building label
         let labelGeometry = SCNText()
         labelGeometry.string = buildingDict.value(forKey: "name")
+        
         let labelNode = SCNNode(geometry: labelGeometry)
         let buildingName: String = buildingDict.value(forKey: "name") as! String
         labelNode.name = buildingName
@@ -407,6 +408,33 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         let hitTestResults = sceneView.hitTest(tapPoint, options: [.boundingBoxOnly: true])
         
         if let tappedNode = hitTestResults.first?.node {
+//            let plane: SCNPlane = SCNPlane()
+//            plane.width = 50
+//            plane.height = 85
+//            plane.insertMaterial(SCNMaterial(), at: 0)
+//            let skscene: SKScene = SKScene()
+//
+//            // Create a new ViewController and pass it the selected building's data
+//            let buildingDetailViewController = BuildingDetailsViewController.init(nibName: "BuildingDetails", bundle: nil)
+//            buildingDetailViewController.delegate = self
+//            // NOTE: ViewController.view must be referenced at least once before referencing ANY IBOutlets in the ViewController. Referencing the `view` property implicity calls loadView(), which should never be called directly by the programmer.
+//            let viewFromNib: UIView! = buildingDetailViewController.view
+//            buildingDetailViewController.buildingNameLabel.text = "TEST"
+//            buildingDetailViewController.buildingImageview.image = UIImage(named: "no-image")
+//            plane.materials[0].diffuse.contents = viewFromNib
+//            let planeNode: SCNNode = SCNNode(geometry: plane)
+//
+//            // Position the info in the center of the building's name label
+//            planeNode.position = tappedNode.position
+//            planeNode.position.x += (tappedNode.boundingBox.max.x - tappedNode.boundingBox.min.x ) / 2
+//            planeNode.position.z -= tappedNode.position.z / 2
+//
+//            // Always point the node towards the camera
+//            planeNode.constraints = [SCNConstraint]()
+//            planeNode.constraints?.append(SCNBillboardConstraint())
+//
+//            sceneView.scene.rootNode.addChildNode(planeNode)
+            
             displayBuildingInfo(buildingName: tappedNode.name)
         } else {
             print("no results")
@@ -417,40 +445,45 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     func displayBuildingInfo(buildingName: String?) {
         if buildingName != nil {
             let buildingDict: NSMutableDictionary? = dict_LabelNode_BuildingDict[buildingName!] as? NSMutableDictionary
-            
-            // Create a new ViewController and pass it the selected building's data
-            let buildingDetailViewController = BuildingDetailsViewController.init(nibName: "BuildingDetails", bundle: nil)
-            buildingDetailViewController.delegate = self
-            
-            // NOTE: ViewController.view must be referenced at least once before referencing ANY IBOutlets in the ViewController. Referencing the `view` property implicity calls loadView(), which should never be called directly by the programmer.
-            let viewFromNib: UIView! = buildingDetailViewController.view
-            
-            // Display the building name
-            buildingDetailViewController.buildingNameLabel.text = buildingName
-            
-            // Get the building's image asynchronously and display it once available
-            if let imageAddress = buildingDict?.value(forKey: "imageUrl") as? String {
-                if let buildingImageUrl = URL(string: imageAddress){
-                    // Display a loading indicator while the image is downloading
-                    downloadAndDisplayImageAsync(url: buildingImageUrl, imageView: buildingDetailViewController.buildingImageview)
-                }
-            }
-        
-            // Get the building's description asynchronously and display it once available
-            if let descriptionAddress = buildingDict?.value(forKey: "descriptionUrl") as? String {
-                if let buildingDescriptionUrl = URL(string: descriptionAddress) {
-                    downloadAndDisplayLabelTextAsync(url: buildingDescriptionUrl, label: buildingDetailViewController.buildingDescriptionLabel)
-                }
-            }
-
+            let buildingDetailViewController = createBuildingDetailsViewControllerFromDict(buildingDict: buildingDict)
             self.addChildViewController(buildingDetailViewController)
 
             let buildingOverlayScene = SKScene(size: sceneView.bounds.size)
             sceneView.overlaySKScene = buildingOverlayScene
+            let viewFromNib: UIView = buildingDetailViewController.view
             viewFromNib.alpha = 0
             buildingOverlayScene.view!.addSubview(viewFromNib)
             UIView.animate(withDuration: 1.5, animations: { viewFromNib.alpha = 0.92 })
         }
+    }
+    
+    func createBuildingDetailsViewControllerFromDict(buildingDict: NSMutableDictionary?) -> BuildingDetailsViewController {
+        // Create a new ViewController and pass it the selected building's data
+        let buildingDetailViewController = BuildingDetailsViewController.init(nibName: "BuildingDetails", bundle: nil)
+        buildingDetailViewController.delegate = self
+        
+        // NOTE: ViewController.view must be referenced at least once before referencing ANY IBOutlets in the ViewController. Referencing the `view` property implicity calls loadView(), which should never be called directly by the programmer.
+        let _: UIView! = buildingDetailViewController.view
+        
+        // Display the building name
+        buildingDetailViewController.buildingNameLabel.text = buildingDict?.value(forKey: "name") as? String
+        
+        // Get the building's image asynchronously and display it once available
+        if let imageAddress = buildingDict?.value(forKey: "imageUrl") as? String {
+            if let buildingImageUrl = URL(string: imageAddress){
+                // Display a loading indicator while the image is downloading
+                downloadAndDisplayImageAsync(url: buildingImageUrl, imageView: buildingDetailViewController.buildingImageview)
+            }
+        }
+        
+        // Get the building's description asynchronously and display it once available
+        if let descriptionAddress = buildingDict?.value(forKey: "descriptionUrl") as? String {
+            if let buildingDescriptionUrl = URL(string: descriptionAddress) {
+                downloadAndDisplayLabelTextAsync(url: buildingDescriptionUrl, label: buildingDetailViewController.buildingDescriptionLabel)
+            }
+        }
+
+        return buildingDetailViewController
     }
     
     func createAndShowLoadingIndicator(addToView: UIView) -> UIActivityIndicatorView {
