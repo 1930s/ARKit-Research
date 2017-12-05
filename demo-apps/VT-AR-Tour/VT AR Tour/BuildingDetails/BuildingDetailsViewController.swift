@@ -18,6 +18,7 @@ class BuildingDetailsViewController: UIViewController {
     @IBOutlet var buildingImageview: UIImageView!
     @IBOutlet var scrollView: UIScrollView!
     @IBOutlet var buildingDescriptionLabel: UILabel!
+    @IBOutlet var closeButton: UIButton!
     
     var delegate: BuildingDetailsDelegate?
     

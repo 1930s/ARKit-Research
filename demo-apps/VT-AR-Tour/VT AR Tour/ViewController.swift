@@ -207,6 +207,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         let distanceFromUserInMiles: Double = distanceBetweenPointsInMiles(lat1: currentLocation.coordinate.latitude, long1: currentLocation.coordinate.longitude, lat2: buildingLocation.coordinate.latitude, long2: buildingLocation.coordinate.longitude)
                        
                         if (distanceFromUserInMiles >= 0.25) {
+                            // Disregard buildings that are too far away
                             continue
                         }
 //                         print("distance from user in miles: \(distanceFromUserInMiles)")
@@ -214,15 +215,32 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
                         // Record how far the building is from the user.
                         buildingDict["distanceFromUser"] = distanceFromUserInMiles
                         
+                        
                         // Create a building label node and record it and its related dictionary in another dictionary
                         let labelNode: SCNNode = createBuildingLabelNode(currentLocation, buildingLocation, distanceFromUserInMiles, buildingDict: buildingDict)
                         dict_LabelNode_BuildingDict[labelNode.name!] = buildingDict
                         
+                        // If the user is close to the building, create a BuildingDetailsView embedded in a SCNNode
+                        var buildingDetailsPlaneNode: SCNNode?
+                        var buildingDetailsNodeName = ""
+                        if distanceFromUserInMiles <= 0.1, let buildingDict: NSMutableDictionary = dict_LabelNode_BuildingDict[labelNode.name!] as? NSMutableDictionary {
+                            buildingDetailsPlaneNode = createPopulatedBuildingDetailsSCNNode(buildingDict: buildingDict, anchor: labelNode.position)
+                            buildingDetailsPlaneNode?.name = "\(labelNode.name!)-detailsNode"
+                            buildingDetailsNodeName = (buildingDetailsPlaneNode?.name!)!
+                        }
+                        
                         // Only add the building label if it doesn't already exist
-                        let buildingLabelNode = sceneView.scene.rootNode.childNode(withName: labelNode.name!, recursively: false)
-                        if (buildingLabelNode == nil) {
-                            // Add the node to the scene
+                        let existingBuildingLabelNode = sceneView.scene.rootNode.childNode(withName: labelNode.name!, recursively: false)
+                        
+                        // Only add the building details if the user is close to the building
+                        let existingBuildingDetailsNode = sceneView.scene.rootNode.childNode(withName: buildingDetailsNodeName, recursively: false)
+                        
+                        if (existingBuildingLabelNode == nil) {
                             sceneView.scene.rootNode.addChildNode(labelNode)
+                        }  else if (existingBuildingDetailsNode == nil && buildingDetailsPlaneNode != nil) {
+                            sceneView.scene.rootNode.addChildNode(buildingDetailsPlaneNode!)
+                        } else {
+                            // show the name label
                         }
                     }
                     // TODO Prevent labels from rendering "on top"/"in front" of each other. You can't read it if this happens.
@@ -408,37 +426,39 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         let hitTestResults = sceneView.hitTest(tapPoint, options: [.boundingBoxOnly: true])
         
         if let tappedNode = hitTestResults.first?.node {
-//            let plane: SCNPlane = SCNPlane()
-//            plane.width = 50
-//            plane.height = 85
-//            plane.insertMaterial(SCNMaterial(), at: 0)
-//            let skscene: SKScene = SKScene()
-//
-//            // Create a new ViewController and pass it the selected building's data
-//            let buildingDetailViewController = BuildingDetailsViewController.init(nibName: "BuildingDetails", bundle: nil)
-//            buildingDetailViewController.delegate = self
-//            // NOTE: ViewController.view must be referenced at least once before referencing ANY IBOutlets in the ViewController. Referencing the `view` property implicity calls loadView(), which should never be called directly by the programmer.
-//            let viewFromNib: UIView! = buildingDetailViewController.view
-//            buildingDetailViewController.buildingNameLabel.text = "TEST"
-//            buildingDetailViewController.buildingImageview.image = UIImage(named: "no-image")
-//            plane.materials[0].diffuse.contents = viewFromNib
-//            let planeNode: SCNNode = SCNNode(geometry: plane)
-//
-//            // Position the info in the center of the building's name label
-//            planeNode.position = tappedNode.position
-//            planeNode.position.x += (tappedNode.boundingBox.max.x - tappedNode.boundingBox.min.x ) / 2
-//            planeNode.position.z -= tappedNode.position.z / 2
-//
-//            // Always point the node towards the camera
-//            planeNode.constraints = [SCNConstraint]()
-//            planeNode.constraints?.append(SCNBillboardConstraint())
-//
-//            sceneView.scene.rootNode.addChildNode(planeNode)
-            
-            displayBuildingInfo(buildingName: tappedNode.name)
-        } else {
-            print("no results")
+            if let buildingDict: NSMutableDictionary? = dict_LabelNode_BuildingDict[tappedNode.name] as? NSMutableDictionary {
+                // 
+//                let buildingDetailsPlaneNode = createPopulatedBuildingDetailsSCNNode(buildingDict: buildingDict!, anchor: tappedNode.position)
+//                sceneView.scene.rootNode.addChildNode(buildingDetailsPlaneNode)
+                 displayBuildingInfo(buildingName: tappedNode.name)
+            }
         }
+    }
+    
+    /*
+     * Creates a SCNNode that contains a BuildingDetails ViewController and positions it at
+     * the anchor's position. Does not add the node to the scene.
+     */
+    func createPopulatedBuildingDetailsSCNNode(buildingDict: NSMutableDictionary, anchor: SCNVector3) -> SCNNode {
+        let buildingDetailViewController = createBuildingDetailsViewControllerFromDict(buildingDict: buildingDict)
+        buildingDetailViewController.closeButton.alpha = 0 // Hide the close button
+        
+        // Create a SCNPlane and add the BuildingDetailsView
+        let plane: SCNPlane = SCNPlane()
+        plane.width = 50
+        plane.height = 85
+        plane.insertMaterial(SCNMaterial(), at: 0)
+        plane.materials[0].diffuse.contents = buildingDetailViewController.view
+        
+        // Create a node with the plane's geometry and position it in the center of the building's name label
+        let planeNode: SCNNode = SCNNode(geometry: plane)
+        planeNode.position = anchor
+        
+        // Always point the node towards the camera
+        planeNode.constraints = [SCNConstraint]()
+        planeNode.constraints?.append(SCNBillboardConstraint())
+        
+        return planeNode
     }
 
     // Displays the building's info in an overlay
