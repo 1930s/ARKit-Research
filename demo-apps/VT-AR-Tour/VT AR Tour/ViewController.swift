@@ -17,6 +17,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     
     let vtBuildingsWSBaseUrl: String = "http://orca.cs.vt.edu/VTBuildingsJAX-RS/webresources/vtBuildings"
     
+    // Opacity for all BuildingDetails overlays
+    let buildingDetailsOverlayOpacity: CGFloat = 0.92
+    
     // A strong reference to CLLocationManager is required by the CoreLocation API.
     var locationManager = CLLocationManager()
     
@@ -25,6 +28,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         
     // Dictionary mapping SCNNodes to their backing Building dictionaries
     var dict_LabelNode_BuildingDict: NSMutableDictionary = NSMutableDictionary()
+
     
     // MARK: - View Life Cycle
     
@@ -142,8 +146,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         
         // Don't process any further without the user's current location
         guard let currentLocation: CLLocation = locations.last else { return }
-    
-        //print("Current location: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude) location size: \(locations.count)")
         
         // Fetch the VT Buildings JSON if necessary
         if jsonInDocumentDirectory == nil {
@@ -200,7 +202,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         
         // If the user is close to the building, create a BuildingDetailsView embedded in a SCNNode
         let detailsMaxDistance = 0.1 // miles
-        var buildingDetailsPlaneNode: SCNNode?
+        var buildingDetailsPlaneNode: SCNNode? = nil
         let buildingDetailsNodeName = "\(labelNode.name!)-detailsNode"
         if distanceFromUserInMiles <= detailsMaxDistance, let buildingDict: NSMutableDictionary = dict_LabelNode_BuildingDict[labelNode.name!] as? NSMutableDictionary {
             buildingDetailsPlaneNode = createPopulatedBuildingDetailsSCNNode(buildingDict: buildingDict, anchor: labelNode.position)
@@ -211,20 +213,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         let existingBuildingLabelNode = sceneView.scene.rootNode.childNode(withName: labelNode.name!, recursively: false)
         let existingBuildingDetailsNode = sceneView.scene.rootNode.childNode(withName: buildingDetailsNodeName, recursively: false)
         
+        // Display the appropriate SCNNode depending on the building's distance from the user
         if (existingBuildingLabelNode == nil) {
             sceneView.scene.rootNode.addChildNode(labelNode)
         }  else if (existingBuildingDetailsNode == nil && buildingDetailsPlaneNode != nil) {
+            buildingDetailsPlaneNode!.opacity = 0
             sceneView.scene.rootNode.addChildNode(buildingDetailsPlaneNode!)
-            existingBuildingLabelNode?.opacity = 0
-        } else if distanceFromUserInMiles > detailsMaxDistance {
-            existingBuildingDetailsNode?.opacity = 0
-            existingBuildingLabelNode?.opacity = 1.0
+            crossFadeNodes(fadeInNode: buildingDetailsPlaneNode!, fadeOutNode: existingBuildingLabelNode!, duration: 1.0)
+        } else if distanceFromUserInMiles > detailsMaxDistance && existingBuildingLabelNode != nil && existingBuildingDetailsNode != nil {
+            crossFadeNodes(fadeInNode: existingBuildingLabelNode!, fadeOutNode: existingBuildingDetailsNode!, duration: 1.0)
         }
     }
     
     // MARK: - JSON Methods
     
-    // Gets the VT Buildings JSON from the device's cache or from the
+    // Gets the VT Buildings JSON from the device's cache or from the API
     func getVTBuildingsJSON() -> Data? {
         do {
             // Try to read the JSON from the device's Document directory
@@ -232,11 +235,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             
             if jsonInDocumentDirectory != nil {
                 // Successfully read cached data
-                print("read json from cache")
                 return jsonInDocumentDirectory
             } else {
                 // Reading cached data failed; download JSON data from the API in a single thread
-                print("had to download json data")
                 let jsonData: Data? = try Data(contentsOf: URL(string: vtBuildingsWSBaseUrl)!, options: NSData.ReadingOptions.dataReadingMapped)
                     // Save the data we just downloaded from the API
                 if let jsonDataFromApi = jsonData {
@@ -275,7 +276,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         do {
             try jsonData.write(to: URL(fileURLWithPath: documentDirectoryPath).appendingPathComponent(jsonFileName), options: .atomicWrite)
         } catch let error as NSError {
-            print("Error writing to cache file: \(error.localizedDescription)")
+            showAlertMessage(title: "Caching JSON data failed!", message: "Error: \(error.localizedDescription)")
         }
     }
     
@@ -394,6 +395,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         
         // Create a SCNPlane and add the BuildingDetailsView
         let plane: SCNPlane = SCNPlane()
+        
+        // Match the ViewController.view's corner radius to prevent rendering white corners
+        plane.cornerRadius = (buildingDetailViewController.view?.layer.cornerRadius)! / 4
+        
+        // Configure the plane
         plane.width = 50
         plane.height = 85
         plane.insertMaterial(SCNMaterial(), at: 0)
@@ -422,7 +428,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             let viewFromNib: UIView = buildingDetailViewController.view
             viewFromNib.alpha = 0
             buildingOverlayScene.view!.addSubview(viewFromNib)
-            UIView.animate(withDuration: 1.5, animations: { viewFromNib.alpha = 0.92 })
+            UIView.animate(withDuration: 1.5, animations: { viewFromNib.alpha = self.buildingDetailsOverlayOpacity })
         }
     }
     
@@ -533,6 +539,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     }
     
     // MARK: - Node animations
+    
+    // Cross fade between two nodes for the given duration
+    func crossFadeNodes(fadeInNode: SCNNode, fadeOutNode: SCNNode, duration: Double) {
+        fadeOutNode.runAction(SCNAction.fadeOpacity(to: 0, duration: duration))
+        fadeInNode.runAction(SCNAction.fadeOpacity(to: buildingDetailsOverlayOpacity, duration: duration))
+    }
+    
     func fadeNodeInAndOut(node: SKNode, initialDelay: Double, fadeInDuration: Double, displayDuration: Double, fadeOutDuration: Double) {
         // Fade in the label
         node.run(SKAction.sequence([

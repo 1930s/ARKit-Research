@@ -27,4 +27,10 @@ class BuildingDetailsViewController: UIViewController {
             buildingDetailsDelegate.closeBuildingDetailsView(viewController: self)
         }
     }
+    
+    // Give the view rounded corners
+    override func viewDidLoad() {
+        view.layer.cornerRadius = 20;
+        view.layer.masksToBounds = true;
+    }
 }
