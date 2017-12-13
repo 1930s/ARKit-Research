@@ -22,6 +22,7 @@ class BuildingDetailsViewController: UIViewController {
     
     var delegate: BuildingDetailsDelegate?
     
+    // Closes the BuildingDetailsView
     @IBAction func close(_ sender: UIButton) {
         if let buildingDetailsDelegate = delegate {
             buildingDetailsDelegate.closeBuildingDetailsView(viewController: self)
@@ -32,15 +33,5 @@ class BuildingDetailsViewController: UIViewController {
     override func viewDidLoad() {
         view.layer.cornerRadius = 20;
         view.layer.masksToBounds = true;
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-//        var contentRect = CGRect.zero
-//        for view in scrollView.subviews {
-//            contentRect = contentRect.union(view.frame)
-//        }
-//        scrollView.contentSize = contentRect.size
-//        scrollView.translatesAutoresizingMaskIntoConstraints = false
-//        buildingDescriptionLabel.translatesAutoresizingMaskIntoConstraints = false
     }
 }

@@ -2,6 +2,7 @@
 //  MatrixHelper - A set of matrix operations taken with permission from https://github.com/inorganik/MatrixHelper/blob/master/MatrixHelper.swift
 //
 //  Created by Jamie Perkins on 9/14/17.
+//  Used with permission by Patrick Gatewood on 11/05/17
 //  Copyright © 2017 Inorganik Produce, Inc. All rights reserved.
 //
 import Foundation

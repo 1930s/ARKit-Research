@@ -17,18 +17,17 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     
     let vtBuildingsWSBaseUrl: String = "http://orca.cs.vt.edu/VTBuildingsJAX-RS/webresources/vtBuildings"
     
+    // JSON read from the Document directory (cache)
+    var jsonInDocumentDirectory: Data? = nil
+    
     // Opacity for all BuildingDetails overlays
     let buildingDetailsOverlayOpacity: CGFloat = 0.92
     
-    // A strong reference to CLLocationManager is required by the CoreLocation API.
+    // A strong reference to CLLocationManager is required by the CoreLocation API
     var locationManager = CLLocationManager()
     
-    // JSON read from the Document directory
-    var jsonInDocumentDirectory: Data? = nil
-        
     // Dictionary mapping SCNNodes to their backing Building dictionaries
     var dict_LabelNode_BuildingDict: NSMutableDictionary = NSMutableDictionary()
-
     
     // MARK: - View Life Cycle
     
@@ -92,7 +91,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         super.viewWillAppear(animated)
         let configuration = ARWorldTrackingConfiguration()
         
-        // Defines the ARSession's coordinate system based on gravity and the compass heading in the device. Note: THIS IS CRITICALLY IMPORTANT for location-based AR.
+        // Defines the ARSession's coordinate system based on gravity and the compass heading in the device. Note: THIS IS CRITICALLY IMPORTANT for location-based AR applications
         configuration.worldAlignment = .gravityAndHeading
 
         // Run the view's session
@@ -157,17 +156,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             do {
                 let jsonArray = try JSONSerialization.jsonObject(with: jsonDataFromApi, options: .mutableContainers) as! NSArray
                 
-                // TODO remove (example building)
-                // -----------------------------------------------------------------
-                let testBuilding = jsonArray.firstObject as! NSMutableDictionary
-                // coordinates of The Edge Apartments
-                testBuilding["latitude"] = 37.236218
-                testBuilding["longitude"] = -80.423803
-                testBuilding["name"] = "The Edge Apartments"
-                print("distance of the edge from user: \(distanceBetweenPointsInMiles(lat1: testBuilding.value(forKey: "latitude") as! Double, long1: testBuilding.value(forKey: "longitude") as! Double, lat2: currentLocation.coordinate.latitude, long2: currentLocation.coordinate.longitude))")
-                // -----------------------------------------------------------------
-                
-                // Loop through each building in the response
                 for building in jsonArray {
                     processBuilding(building, currentLocation)
                 }
@@ -188,7 +176,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         // Compute the distance between the user's current location and the building's location
         let distanceFromUserInMiles: Double = distanceBetweenPointsInMiles(lat1: currentLocation.coordinate.latitude, long1: currentLocation.coordinate.longitude, lat2: buildingLocation.coordinate.latitude, long2: buildingLocation.coordinate.longitude)
         
-        // Disregard buildings that are too far away
+        // Disregard buildings that are too far away to accurately display
         if (distanceFromUserInMiles >= 0.25) {
             return
         }
@@ -215,12 +203,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         
         // Display the appropriate SCNNode depending on the building's distance from the user
         if (existingBuildingLabelNode == nil) {
+            // Add the building label to the scene
             sceneView.scene.rootNode.addChildNode(labelNode)
         }  else if (existingBuildingDetailsNode == nil && buildingDetailsPlaneNode != nil) {
+            // User got closer: fade out the building name and fade in the building details
             buildingDetailsPlaneNode!.opacity = 0
             sceneView.scene.rootNode.addChildNode(buildingDetailsPlaneNode!)
             crossFadeNodes(fadeInNode: buildingDetailsPlaneNode!, fadeOutNode: existingBuildingLabelNode!, duration: 1.0)
         } else if distanceFromUserInMiles > detailsMaxDistance && existingBuildingLabelNode != nil && existingBuildingDetailsNode != nil {
+            // User moved away: fade out the building details and fade in the building name
             crossFadeNodes(fadeInNode: existingBuildingLabelNode!, fadeOutNode: existingBuildingDetailsNode!, duration: 1.0)
         }
     }
@@ -281,6 +272,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     }
     
     // MARK - Create Building Labels
+    
+    // Creates a SCNNode that displays the building's name
     func createBuildingLabelNode(_ currentLocation: CLLocation, _ buildingLocation: CLLocation, _ distanceFromUserInMiles: Double, buildingDict: NSMutableDictionary) -> SCNNode {
         
         // Add a marker in the building's position
@@ -288,15 +281,15 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         let buildingARLocationPositionColumn = buildingARLocation.columns.3
         let targetPosition: SCNVector3 = SCNVector3Make(buildingARLocationPositionColumn.x, buildingARLocationPositionColumn.y /* + vertical offset would go here */, buildingARLocationPositionColumn.z)
         
+        // Store the building's name
         let buildingName: String = buildingDict.value(forKey: "name") as! String
         
         // Create building label
         let labelGeometry = SCNText()
         labelGeometry.string = buildingName
         
-        // Add required SCNNode wrapper
+        // Add SCNNode wrapper
         let labelNode = SCNNode(geometry: labelGeometry)
-       
         labelNode.name = buildingName
         labelNode.position = targetPosition
         
@@ -312,7 +305,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
     func degreesToRadians(_ degrees: Double) -> Double { return degrees * .pi / 180.0 }
     func radiansToDegrees(_ radians: Double) -> Double { return radians * 180.0 / .pi }
     
+    // ----------------------------------------------
     // MARK: - Position math (lat/long; matrix, etc)
+    // ----------------------------------------------
     
     // MARK: Haversine formula
     // Calculates the distance between two lat/long coordinates in miles.
@@ -423,6 +418,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             let buildingDetailViewController = createBuildingDetailsViewControllerFromDict(buildingDict: buildingDict)
             self.addChildViewController(buildingDetailViewController)
 
+            // Create the scene
             let buildingOverlayScene = SKScene(size: sceneView.bounds.size)
             sceneView.overlaySKScene = buildingOverlayScene
             let viewFromNib: UIView = buildingDetailViewController.view
@@ -459,7 +455,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
         return buildingDetailViewController
     }
     
-    // Create loading indicator and add it to the passed in view.
+    // Create loading indicator and add it to the passed in view
     func createAndShowLoadingIndicator(addToView: UIView) -> UIActivityIndicatorView {
         let loadingIndicator = UIActivityIndicatorView()
         
@@ -500,7 +496,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDele
             }
         }
     }
-     // Download an image on a background thread and display it in the passed in UIImageView once completed
+    
+    // Download an image on a background thread and display it in the passed in UIImageView once completed
     func downloadAndDisplayImageAsync(url: URL, imageView: UIImageView) {
         var image: UIImage?
         let loadingIndicator = createAndShowLoadingIndicator(addToView: imageView)
