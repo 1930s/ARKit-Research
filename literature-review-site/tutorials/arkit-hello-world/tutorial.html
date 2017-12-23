@@ -38,23 +38,26 @@
             </header>
 
             <br>
+            <section>
             <h3>Learning Objectives</h3>
             <ul>
                 <li>How to develop a simple Augmented Reality app in Xcode</li>
                 <li>How to detect horizontal planes using ARKit</li>
                 <li>How to add a <a href="https://developer.apple.com/documentation/scenekit/scnnode"
-                                    target="_blank">SCNNode</a> to the Augmented Reality view using SceneKit</li>
+                                    target="_blank">SCNNode</a> to the Augmented Reality view using SceneKit
+                </li>
             </ul>
 
             <h3>Foreword: Software Life Cycle</h3>
             <p>Even with smaller applications, the <a
                     href="https://manta.cs.vt.edu/cs3714/StudentsOnly/Handouts/SELifeCycle.html" target="_blank">software
-                life cycle</a> is crucial to developing and maintaining high-quality software. This tutorial encompasses only the <i>programming</i>
+                life cycle</a> is crucial to developing and maintaining high-quality software. This tutorial encompasses
+                only the <i>programming</i>
                 process of the cycle.</p>
 
             <h3>Application Functionality</h3>
             <p>This is a universal application that will run on iPhone 6s and up and iPad Pro and up.</p>
-            <img src="images/plane-detection-update.jpeg" width="50%" />
+            <img src="images/plane-detection-update.jpeg" width="50%"/>
             <p>The application detects planes and applies a texture to the rendered plane representation.</p>
 
             <h3>Creating the project</h3>
@@ -75,7 +78,8 @@
             <ol>
                 <li>In ViewController.swift, delete the sample code from <code>viewDidLoad()</code>.<br><img
                         src="../common-images/viewDidLoad.png" width="70%"/></li>
-                <li>Delete everything inside the art.scnassets folder. <br><img src="../common-images/art.png" width="70%"/></li>
+                <li>Delete everything inside the art.scnassets folder. <br><img src="../common-images/art.png"
+                                                                                width="70%"/></li>
             </ol>
 
             <h3>Creating an AR Session</h3>
@@ -118,7 +122,8 @@ override func viewWillAppear(_ animated: Bool) {
                 object and add it to the view. A SCNPlane is "a rectangular, one-sided plane geometry of specified width
                 and height" that is prefect for visualizing the horizontal planes ARKit has found in your view. By
                 default, ARKit highlights planes with a dull mercury color. To better visualize the detected plane,
-                download an image to apply as a texture to the plane and add it to your project's Assets.xcassets folder. I used a <a href="images/grid.png" download>simple
+                download an image to apply as a texture to the plane and add it to your project's Assets.xcassets
+                folder. I used a <a href="images/grid.png" download>simple
                     grid texture</a>.</p>
             <p>Add the following code to your ViewController, under the pre-generated <code>// MARK: -
                 ARSCNViewDelegate</code> comment.</p>
@@ -153,10 +158,12 @@ func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: AR
             </code></pre>
             <br>
             <p>Now ARKit will apply this texture to each plane it detects in your view.</p>
-            <img src="images/plane-detection.jpeg" width="70%" />
-            <br /> <br />
+            <img src="images/plane-detection.jpeg" width="70%"/>
+            <br/> <br/>
             <h3>Updating your 3D content</h3>
-            <p>As ARKit ascertains more data about the view, it will update the bounds of its estimated planes. To subscribe to these updates, have the ARSCNViewDelegate implement the <code>renderer(_:didUpdate:for:)</code> delegate method.</p>
+            <p>As ARKit ascertains more data about the view, it will update the bounds of its estimated planes. To
+                subscribe to these updates, have the ARSCNViewDelegate implement the
+                <code>renderer(_:didUpdate:for:)</code> delegate method.</p>
             <pre><code>
 func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
     // Update content only for plane anchors and nodes matching the setup created in `renderer(_:didAdd:for:)`.
@@ -178,16 +185,69 @@ func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor:
     plane.height = CGFloat(planeAnchor.extent.z)
 }
             </code></pre>
-            <br />
+            <br/>
             <p>Your SCNNode will now visually update as ARKit updates its plane estimates!</p>
-            <img src="images/plane-detection-update.jpeg" width="70%" />
-            <br /><br /><br />
+            <img src="images/plane-detection-update.jpeg" width="70%"/>
+            <br/><br/><br/>
             <p><b>Congratulations!</b> You just created your first ARKit application.</p>
-            <p>You can download the completed sample project <a href="/../demo-apps/Hello_World.zip" download>here</a>.</p>
+            <!--<p>You can download the completed sample project <a href="../../../demo-apps/Hello_World.zip" download>here</a>.-->
+            </p>
+
+            </section>
         </div>
     </div>
+    <div id="sidebar">
+        <!-- Sidebar -->
+        <div class="inner">
 
-    <div id="sidebar"></div>
+            <!-- Menu -->
+            <nav id="menu">
+                <header class="major">
+                    <h2>Menu</h2>
+                </header>
+                <ul>
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../arkit-samples.html">Sample Applications</a></li>
+                </ul>
+                <br/>
+                <section>
+                    <header class="major">
+                        <h2 style="margin-bottom: 10px;">Tutorials</h2>
+                    </header>
+                    <nav>
+                        <ul>
+                            <li><a href="../arkit-hello-world/tutorial.html">Hello
+                                World</a></li>
+                            <li><a href="../models-and-physics/tutorial.html">SceneKit
+                                Models and
+                                Physics</a></li>
+                        </ul>
+                    </nav>
+                </section>
+                <br/>
+                <section>
+                    <header class="major">
+                        <h2 style="margin-bottom: 10px;">Semester Project</h2>
+                    </header>
+                    <nav>
+                        <ul>
+                            <li><a href="../../semester-project.html">View the results</a></li>
+                        </ul>
+                    </nav>
+                </section>
+            </nav>
+
+
+            <!-- Footer -->
+            <footer id="footer">
+                <p class="copyright">&copy; Patrick Gatewood. All rights reserved. Design: <a
+                        href="https://html5up.net">HTML5
+                    UP</a>.</p>
+            </footer>
+
+        </div>
+
+    </div>
 </div>
 
 <!-- Scripts -->
@@ -199,12 +259,8 @@ func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor:
 <script src="../../assets/js/main.js"></script>
 
 <script src="../../assets/js/main.js"></script>
-<!-- Load sidebar from server -->
+<!-- Highlight code samples -->
 <script>
-    $(function () {
-        $("#sidebar").load("../../template/sidebar.html");
-    });
-
     $(document).ready(function () {
         $('pre code').each(function (i, block) {
             hljs.highlightBlock(block);

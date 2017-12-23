@@ -23,7 +23,7 @@
     <script>hljs.initHighlightingOnLoad();</script>
 
 </head>
-<body>
+<body style="margin-left: 318px;">
 
 <!-- Wrapper -->
 <div id="wrapper">
@@ -32,15 +32,18 @@
     <div id="main">
         <div class="inner">
 
+
             <!-- Header -->
             <header id="header">
                 <h2><a href="" class="logo">Tutorial: SceneKit Models and Physics</a></h2>
             </header>
 
-            <br />
-            <p>Note: This application builds on concepts learned in the <a href="../arkit-hello-world/tutorial.html">ARKit Hello World tutorial</a>.</p>
+            <br/>
+            <section>
+            <p>Note: This application builds on concepts learned in the <a href="../arkit-hello-world/tutorial.html">ARKit
+                Hello World tutorial</a>.</p>
 
-            <br />
+            <br/>
             <h3>Learning Objectives</h3>
             <ul>
                 <li>How to perform a hit test to determine plane collision</li>
@@ -51,12 +54,14 @@
             <h3>Foreword: Software Life Cycle</h3>
             <p>Even with smaller applications, the <a
                     href="https://manta.cs.vt.edu/cs3714/StudentsOnly/Handouts/SELifeCycle.html" target="_blank">software
-                life cycle</a> is crucial to developing and maintaining high-quality software. This tutorial encompasses only the <i>programming</i>
+                life cycle</a> is crucial to developing and maintaining high-quality software. This tutorial encompasses
+                only the <i>programming</i>
                 process of the cycle.</p>
 
             <h3>Application Functionality</h3>
             <p>This is a universal application that will run on iPhone 6s and up and iPad Pro and up.</p>
-            <p>The tutorial teaches how to create a 3D SceneKit model, render it in augmented reality, and apply physics to the object in real time.</p>
+            <p>The tutorial teaches how to create a 3D SceneKit model, render it in augmented reality, and apply physics
+                to the object in real time.</p>
 
 
             <h3>Creating the project</h3>
@@ -77,18 +82,30 @@
             <ol>
                 <li>In ViewController.swift, delete the sample code from <code>viewDidLoad()</code>.<br><img
                         src="../common-images/viewDidLoad.png" width="70%"/></li>
-                <li>Delete everything inside the art.scnassets folder. <br><img src="../common-images/art.png" width="70%"/></li>
+                <li>Delete everything inside the art.scnassets folder. <br><img src="../common-images/art.png"
+                                                                                width="70%"/></li>
             </ol>
 
-            <p>Create a new AR Session using the technique learned in the <a href="../arkit-hello-world/tutorial.html">ARKit Hello World tutorial</a>. Follow the tutorial steps in order to start dynamically tracking horizontal planes. The rest of the tutorial assumes you have followed these steps.</p>
+            <p>Create a new AR Session using the technique learned in the <a href="../arkit-hello-world/tutorial.html">ARKit
+                Hello World tutorial</a>. Follow the tutorial steps in order to start dynamically tracking horizontal
+                planes. The rest of the tutorial assumes you have followed these steps.</p>
 
             <h3>Performing a Hit Test</h3>
-            <p>When the user taps the screen in an AR application, ARKit records the 2D coordinates of the touch. In order to convert the 2D coordinates of the touch to real-world 3D coordinates, ARKit performs a "hit test." This test works as if the user's touch had fired a vector from the device's camera's origin through a 3D point created by projecting the 2D touch point into the 3D view. This 3D point is recorded.</p>
-            <p>If the 3D point lies on a detected horizontal plane, the hit test is a success. In this tutorial, we will use hit testing to allow the user to place 3D cubes in AR.</p>
-            <p>To create a hit test routine, first create a Tap Gesture Recognizer by opening your Main.storyboard and searching the Object library. Drag the Tap Gesture Recognizer object into your ViewController's Scene View. Your View Controller Scene should now look like this:</p>
-            <img src="images/tap-gesture-recognizer.png" />
-            <p>Next, open the Assistant Editor to your Main.storyboard and your ViewController.swift. Implement an action method that will be called when the Tap Gesture Recognizer is recognized.</p>
-            <p>Copy the documented code given below. <b>Carefully study the code, understand what it is doing, and learn from it!</b></p>
+            <p>When the user taps the screen in an AR application, ARKit records the 2D coordinates of the touch. In
+                order to convert the 2D coordinates of the touch to real-world 3D coordinates, ARKit performs a "hit
+                test." This test works as if the user's touch had fired a vector from the device's camera's origin
+                through a 3D point created by projecting the 2D touch point into the 3D view. This 3D point is
+                recorded.</p>
+            <p>If the 3D point lies on a detected horizontal plane, the hit test is a success. In this tutorial, we will
+                use hit testing to allow the user to place 3D cubes in AR.</p>
+            <p>To create a hit test routine, first create a Tap Gesture Recognizer by opening your Main.storyboard and
+                searching the Object library. Drag the Tap Gesture Recognizer object into your ViewController's Scene
+                View. Your View Controller Scene should now look like this:</p>
+            <img src="images/tap-gesture-recognizer.png"/>
+            <p>Next, open the Assistant Editor to your Main.storyboard and your ViewController.swift. Implement an
+                action method that will be called when the Tap Gesture Recognizer is recognized.</p>
+            <p>Copy the documented code given below. <b>Carefully study the code, understand what it is doing, and learn
+                from it!</b></p>
             <pre><code>
 // MARK: - Gesture Handling Action methods
 
@@ -117,11 +134,19 @@
     addCubeAt(targetPosition)
 }
             </code></pre>
-            <p>Connect your action method to the gesture recognizer by holding the control key and dragging from the Tap Gesture Recognizer to your action method.</p>
+            <p>Connect your action method to the gesture recognizer by holding the control key and dragging from the Tap
+                Gesture Recognizer to your action method.</p>
             <h3>Adding 3D Virtual Content</h3>
-            <p>In SceneKit, <a href="https://developer.apple.com/documentation/scenekit/scngeometry">SCNGeometry</a> objects can be attached to the previously-seen SCNNode objects to create realistic visuals. One of the simplest Geometry types is the <a href="https://developer.apple.com/documentation/scenekit/scnbox#relationships">SCNBox</a> object: a "six-sided polyhedron geometry whose whose faces are all rectangles, optionally with rounded edges and corners." Basically, a cube.</p>
-            <p>To create a SCNBox, you must define the shape in terms of its width, height, and length. You must then apply the SCNBox to a SCNNode wrapper and place the SCNNode in the sceneView.</p>
-            <p>Copy the documented code given below. <b>Carefully study the code, understand what it is doing, and learn from it!</b></p>
+            <p>In SceneKit, <a href="https://developer.apple.com/documentation/scenekit/scngeometry">SCNGeometry</a>
+                objects can be attached to the previously-seen SCNNode objects to create realistic visuals. One of the
+                simplest Geometry types is the <a
+                        href="https://developer.apple.com/documentation/scenekit/scnbox#relationships">SCNBox</a>
+                object: a "six-sided polyhedron geometry whose whose faces are all rectangles, optionally with rounded
+                edges and corners." Basically, a cube.</p>
+            <p>To create a SCNBox, you must define the shape in terms of its width, height, and length. You must then
+                apply the SCNBox to a SCNNode wrapper and place the SCNNode in the sceneView.</p>
+            <p>Copy the documented code given below. <b>Carefully study the code, understand what it is doing, and learn
+                from it!</b></p>
             <pre><code>
 // Adds a cube to the sceneView at the given position
 func addCubeAt(_ position: SCNVector3) {
@@ -139,13 +164,17 @@ func addCubeAt(_ position: SCNVector3) {
     sceneView.autoenablesDefaultLighting = true
 }
             </code></pre>
-            <p>Now build and launch your application. Find a horizontal plane, and once it's detected, tap the screen and a cube will appear! </p>
+            <p>Now build and launch your application. Find a horizontal plane, and once it's detected, tap the screen
+                and a cube will appear! </p>
             <div align="center">
-                <img src="images/cube-addition.PNG" width="30%" />
+                <img src="images/cube-addition.PNG" width="30%"/>
             </div>
 
             <h3>Physics Engine</h3>
-            <p>SceneKit includes a realistic physics engine that "performs physics calculations on physics bodies attached to nodes in the scene." To tell SceneKit that it should apply physics to an object, you must attach a <a href="https://developer.apple.com/documentation/scenekit/scnphysicsbody">SCNPhysicsBody</a> to your object.</p>
+            <p>SceneKit includes a realistic physics engine that "performs physics calculations on physics bodies
+                attached to nodes in the scene." To tell SceneKit that it should apply physics to an object, you must
+                attach a <a href="https://developer.apple.com/documentation/scenekit/scnphysicsbody">SCNPhysicsBody</a>
+                to your object.</p>
             <p>Add the following code to your <code>addCubeAt()</code> method.</p>
             <pre><code>
 // Add Physics Body to the cube
@@ -153,10 +182,14 @@ let physicsBody: SCNPhysicsBody = SCNPhysicsBody(type: SCNPhysicsBodyType.dynami
 physicsBody.mass = 2.0; // 2kg
 cubeNode.physicsBody = physicsBody
             </code></pre>
-            <p>Now your cubes will obey gravity, but they'll fall forever! In order to prevent this, you must set up collision detection.</p>
+            <p>Now your cubes will obey gravity, but they'll fall forever! In order to prevent this, you must set up
+                collision detection.</p>
             <h3>Collision Detection</h3>
-            <p>In order to have objects collide instead of pass through each other, each object must have a <a href="https://developer.apple.com/documentation/scenekit/scnphysicsbody">SCNPhysicsBody</a> attached to it.</p>
-            <p>Add this following lines to your <code>addCubeAt()</code> method in order to give your cubes their physics bodies</p>
+            <p>In order to have objects collide instead of pass through each other, each object must have a <a
+                    href="https://developer.apple.com/documentation/scenekit/scnphysicsbody">SCNPhysicsBody</a> attached
+                to it.</p>
+            <p>Add this following lines to your <code>addCubeAt()</code> method in order to give your cubes their
+                physics bodies</p>
             <pre><code>
 // Add Physics Body to the cube
 let physicsBody: SCNPhysicsBody = SCNPhysicsBody(type: .dynamic, shape: SCNPhysicsShape(geometry: cubeGeometry, options: nil))
@@ -165,7 +198,9 @@ physicsBody.restitution = 0.25
 physicsBody.friction = 0.75
 cubeNode.physicsBody = physicsBody
             </code></pre>
-            <p>Next, create a helper function to give your planes their physics bodies. This function will be used when the renderer detects a new plane and when it updates its size estimation of existing planes. <b>Carefully study the code, understand what it is doing, and learn from it!</b></p>
+            <p>Next, create a helper function to give your planes their physics bodies. This function will be used when
+                the renderer detects a new plane and when it updates its size estimation of existing planes. <b>Carefully
+                    study the code, understand what it is doing, and learn from it!</b></p>
             <pre><code>
 /**
  Creates a new physics body for a plane SCNNode
@@ -182,7 +217,9 @@ func createPlanePhysicsBody(forNode: SCNNode, anchor: ARPlaneAnchor) {
     forNode.physicsBody = physicsBody
 }
             </code></pre>
-            <p>Update your <code>renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor)</code> method to give your planes a physics body for the cubes to interact with. <b>Carefully study the code, understand what it is doing, and learn from it!</b></p>
+            <p>Update your <code>renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor:
+                ARAnchor)</code> method to give your planes a physics body for the cubes to interact with. <b>Carefully
+                study the code, understand what it is doing, and learn from it!</b></p>
             <pre><code>
 /**
  Called when a new node is mapped to the passed in anchor
@@ -217,7 +254,9 @@ func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: AR
     node.addChildNode(planeNode)
 }
             </code></pre>
-            <p>In addition, update the node's physics body when the plane estimation is updated in <code>func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor)</code>. <b>Carefully study the code, understand what it is doing, and learn from it!</b></p>
+            <p>In addition, update the node's physics body when the plane estimation is updated in <code>func renderer(_
+                renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor)</code>. <b>Carefully study
+                the code, understand what it is doing, and learn from it!</b></p>
             <pre><code>
 /**
  Called when the renderer updates its estimation of an existing node.
@@ -246,14 +285,21 @@ func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor:
 }
             </code></pre>
             <p>Your cubes will now interact with the planes and each other!</p>
-                <div align="center">
-            <img src="images/collision.PNG" width="70%" />
+            <div align="center">
+                <img src="images/collision.PNG" width="70%"/>
             </div>
-            <br />
+            <br/>
             <h3>Saving Memory</h3>
-            <p>You may have noticed in your testing that if a cube falls off of a plane, it seems to fall forever. Even after the cube is long out of sight, it is still in memory, and the physics engine still includes it in calculations every frame. This is undesirable, as if the user adds too many cubes, the device can run out of memory.</p>
-            <p>To prevent this, you can place a giant, invisible plane at the "bottom" of the world (think slightly below the ground). You can use a bitmask to detect which nodes collide, and if a cube collides with the bottom plane, you can remove it from memory to save resources.</p>
-            <p>To check which nodes are colliding, we will bitwise-AND each node's collision bit mask together and check the result against the two bitmasks bitwise-OR-ed together. Add the following two bitmasks below your class declaration.</p>
+            <p>You may have noticed in your testing that if a cube falls off of a plane, it seems to fall forever. Even
+                after the cube is long out of sight, it is still in memory, and the physics engine still includes it in
+                calculations every frame. This is undesirable, as if the user adds too many cubes, the device can run
+                out of memory.</p>
+            <p>To prevent this, you can place a giant, invisible plane at the "bottom" of the world (think slightly
+                below the ground). You can use a bitmask to detect which nodes collide, and if a cube collides with the
+                bottom plane, you can remove it from memory to save resources.</p>
+            <p>To check which nodes are colliding, we will bitwise-AND each node's collision bit mask together and check
+                the result against the two bitmasks bitwise-OR-ed together. Add the following two bitmasks below your
+                class declaration.</p>
             <pre><code>
 let bottomCollisionBitMask = 1 << 0 // 001 = 1
 let cubeCollisionBitMask = 1 << 1   // 010 = 2
@@ -262,7 +308,10 @@ let cubeCollisionBitMask = 1 << 1   // 010 = 2
             <pre><code>physicsBody.categoryBitMask = bottomCollisionBitMask</code></pre>
             <p>and in <code>addCubeAt()</code> add </p>
             <pre><code>physicsBody.categoryBitMask = cubeCollisionBitMask</code></pre>
-            <p>To use these bitmasks, the viewcontroller must implement the <a href="https://developer.apple.com/documentation/scenekit/scnphysicscontactdelegate">SCNPhysicsContactDelegate</a> methods. Add the SCNPhysicsContactDelegate to your class declaration and implement the following function: </p>
+            <p>To use these bitmasks, the viewcontroller must implement the <a
+                    href="https://developer.apple.com/documentation/scenekit/scnphysicscontactdelegate">SCNPhysicsContactDelegate</a>
+                methods. Add the SCNPhysicsContactDelegate to your class declaration and implement the following
+                function: </p>
             <pre><code>
  // MARK: - SCNPhysicsContactDelegate
 
@@ -282,12 +331,62 @@ func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact)
 }
             </code></pre>
             <p>Congratulations! You have completed the tutorial, and your implementation is now memory-efficient!</p>
-            <p>You can download the completed sample project <a href="/../demo-apps/Models-and-Physics-AR.zip" download>here</a>.</p>
+        </section>
+        </div>
+
+    </div>
+    <div id="sidebar">
+        <!-- Sidebar -->
+        <div class="inner">
+
+            <!-- Menu -->
+            <nav id="menu">
+                <header class="major">
+                    <h2>Menu</h2>
+                </header>
+                <ul>
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../arkit-samples.html">Sample Applications</a></li>
+                </ul>
+                <br/>
+                <section>
+                    <header class="major">
+                        <h2 style="margin-bottom: 10px;">Tutorials</h2>
+                    </header>
+                    <nav>
+                        <ul>
+                            <li><a href="../arkit-hello-world/tutorial.html">Hello
+                                World</a></li>
+                            <li><a href="../models-and-physics/tutorial.html">SceneKit
+                                Models and
+                                Physics</a></li>
+                        </ul>
+                    </nav>
+                </section>
+                <br/>
+                <section>
+                    <header class="major">
+                        <h2 style="margin-bottom: 10px;">Semester Project</h2>
+                    </header>
+                    <nav>
+                        <ul>
+                            <li><a href="../../semester-project.html">View the results</a></li>
+                        </ul>
+                    </nav>
+                </section>
+            </nav>
+
+
+            <!-- Footer -->
+            <footer id="footer">
+                <p class="copyright">&copy; Patrick Gatewood. All rights reserved. Design: <a
+                        href="https://html5up.net">HTML5
+                    UP</a>.</p>
+            </footer>
 
         </div>
-        <div id="sidebar"></div>
-    </div>
 
+    </div>
 </div>
 
 <!-- Scripts -->
@@ -299,12 +398,8 @@ func physicsWorld(_ world: SCNPhysicsWorld, didBegin contact: SCNPhysicsContact)
 <script src="../../assets/js/main.js"></script>
 
 <script src="../../assets/js/main.js"></script>
-<!-- Load sidebar from server -->
+<!-- Highlight code -->
 <script>
-    $(function () {
-        $("#sidebar").load("../../template/sidebar.html");
-    });
-
     $(document).ready(function () {
         $('pre code').each(function (i, block) {
             hljs.highlightBlock(block);
