@@ -4,7 +4,7 @@
 	html5up.net | @ajlkn
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
-<html xmlns:background-color="http://www.w3.org/1999/xhtml">
+<html xmlns:background-color="http://www.w3.org/1999/xhtml" xmlns:max-width="http://www.w3.org/1999/xhtml">
 <head>
     <title>VT AR Tour Documentation</title>
     <meta charset="utf-8"/>
@@ -13,6 +13,7 @@
     <script src="../../assets/js/ie/html5shiv.js"></script><![endif]-->
     <link rel="stylesheet" href="../../assets/css/main.css"/>
     <link rel="stylesheet" href="../../assets/css/custom.css"/>
+    <link rel="stylesheet" href="documentation.css"/>
 
     <!--Code Syntax Highlighting JS library-->
     <link rel="stylesheet" href="../../assets/css/xcode.css"/>
@@ -67,7 +68,8 @@
                 <h3>Creating an AR Session</h3>
                 <p><a href="https://developer.apple.com/documentation/arkit/arsession" target="_blank">ARSession</a> is
                     an
-                    object shared by views that require motion tracking and image processing. Your application will use an <a
+                    object shared by views that require motion tracking and image processing. Your application will use
+                    an <a
                             href="https://developer.apple.com/documentation/arkit/arscnview">ARSCNView</a> to display 3D
                     SceneKit objects in the camera view.</p>
                 <p>ARSession must be configured before it can be run by ARSCNView. To do this, create an instance of <a
@@ -97,24 +99,23 @@ override func viewWillAppear(_ animated: Bool) {
 
             <section>
                 <h2>Leaving an AR View</h2>
-                <p>If your application is more than just one ARSCNView, it may make sense to allow your user to escape the ARSCNView and go back to the previous view. There are <b>two</b> easy ways to do this:</p>
-                <h4>UINavigationController</h4>
-                <p>If your ARSCNView is the child of a UINavigationController, you can hide the bar and use UINavigationController's built-in "edge-pan to go back" gesture.</p>
-                <p>In your <code>viewDidLoad()</code> method, set the <code>interactivePopGestureRecognizer</code> Delegate to your ARViewController. This lets your ARSCNView pass edge-pad gestures to the view's NavigationController.</p>
+                <div class="row">
+                    <div class="column">
+                         <p>If your application is more than just one ARSCNView, it may make sense to allow your user to
+                        escape the ARSCNView and go back to the previous view. There are <b>two</b> easy ways to do
+                        this: a back button and a UINavigationController.</p>
+                    </div>
+                    <div class="column" align="center">
+                        <img src="images/exit-ar.jpeg" width="50%"/>
+                    </div>
+                </div>
 
-                <pre><code>
-override func viewDidLoad() {
-    ...
-  // Required for "swipe right to go back" gesture with a hidden navigation bar
-    navigationController?.interactivePopGestureRecognizer?.delegate = self
-    ...
-}
-        </code></pre>
-
-                <h3>Back Button</h3>
-                <p>A back button is familiar to all users. In order to prevent disrupting your user's experience, you'll only want to show it for a few seconds.</p>
+                <h3>Option 1: Back Button&nbsp;&nbsp;<i class="fa fa-mail-reply fa-2x"></i></h3>
+                <p>A back button is familiar to all users. In order to prevent disrupting your user's experience, you'll
+                    only want to show it for a few seconds.</p>
                 <h4>Button Setup</h4>
-                <p>Call <code>setupBackButton()</code> in <code>viewWillAppear()</code> to create a back button and display it for a few seconds.</p>
+                <p>Call <code>setupBackButton()</code> in <code>viewWillAppear()</code> to create a back button and
+                    display it for a few seconds.</p>
                 <pre><code>
     // Global reference to backButton
     var backButton: UIImageView = UIImageView(image: UIImage(named: "back-icon"))
@@ -135,20 +136,61 @@ override func viewDidLoad() {
                 </code></pre>
 
                 <h4>Handling Touch Gestures</h4>
-                <p>You will likely be using hit tests (as learned in the <a href="../models-and-physics/tutorial.html">models and physics</a> tutorial to determine if the user tapped an object in the scene. Rather than adding a TapGestureRecognizer to our back button and overcomplicating the way our application handles tap gestures, we can add our back button logic to our ARSCNView's tap gesture handling method. </p>
+                <p>You will likely be using hit tests (as learned in the <a href="../models-and-physics/tutorial.html">models
+                    and physics</a> tutorial to determine if the user tapped an object in the scene. Rather than adding
+                    a TapGestureRecognizer to our back button and overcomplicating the way our application handles tap
+                    gestures, we can add our back button logic to our ARSCNView's tap gesture handling method. </p>
+                <p>Add this code to your tap handling method to return to the previous ViewController when the user taps the back button.</p>
                 <pre><code>
     @IBAction func userTappedScreen(_ sender: UITapGestureRecognizer) {
         let screenTapPoint: CGPoint = sender.location(in: self.view)
 
+        // User tapped the back button
         if backButton.frame.contains(screenTapPoint) && !backButton.isHidden {
             navigationController?.popViewController(animated: true)
             return
         }
+
         ...
+
+        // If the back button is hidden and your hit test has no results... show the back button for a few seconds
+        {
+            let animationTime = 1.0
+            let animationDelay = 3.0
+
+            // Display back button for a few seconds
+            UIView.animate(withDuration: animationTime, delay: 0, animations: {
+                    self.backButton.alpha = 1.0
+            }, completion:{ (finished: Bool) in
+                self.backButton.isHidden = false
+            })
+
+            UIView.animate(withDuration: animationTime, delay: animationDelay, options: UIViewAnimationOptions.allowUserInteraction, animations: {
+                self.backButton.alpha = 0
+            }, completion: { (finished: Bool) in
+                self.backButton.isHidden = true
+            })
+        }
      }
                 </code></pre>
 
-        </section>
+        <h3>Option 2: UINavigationController</h3>
+        <p>If your ARSCNView is the child of a UINavigationController, you can hide the bar and use
+            UINavigationController's built-in "edge-pan to go back" gesture.</p>
+        <p>In your <code>viewDidLoad()</code> method, set the <code>interactivePopGestureRecognizer</code>
+            Delegate to your ARViewController. This lets your ARSCNView pass edge-pad gestures to the view's
+            NavigationController.</p>
+
+        <pre><code>
+override func viewDidLoad() {
+    ...
+  // Required for "swipe right to go back" gesture with a hidden navigation bar
+    navigationController?.interactivePopGestureRecognizer?.delegate = self
+    ...
+}
+        </code></pre>
+
+            </section>
 
         </div>
     </div>
@@ -185,7 +227,8 @@ override func viewDidLoad() {
                     </header>
                     <nav>
                         <ul>
-                            <li><a href="/literature-review-site/tutorials/documentation/documentation.html">Documentation</a></li>
+                            <li><a href="/literature-review-site/tutorials/documentation/documentation.html">Documentation</a>
+                            </li>
                         </ul>
                     </nav>
                 </section>
