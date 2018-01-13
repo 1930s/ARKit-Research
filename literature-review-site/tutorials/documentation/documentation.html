@@ -1,0 +1,218 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html xmlns:background-color="http://www.w3.org/1999/xhtml">
+<head>
+    <title>VT AR Tour Documentation</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+    <!--[if lte IE 8]>
+    <script src="../../assets/js/ie/html5shiv.js"></script><![endif]-->
+    <link rel="stylesheet" href="../../assets/css/main.css"/>
+    <link rel="stylesheet" href="../../assets/css/custom.css"/>
+
+    <!--Code Syntax Highlighting JS library-->
+    <link rel="stylesheet" href="../../assets/css/xcode.css"/>
+    <script src="../../assets/js/highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+</head>
+<body>
+
+<!-- Wrapper -->
+<div id="wrapper">
+
+    <!-- Main -->
+    <div id="main">
+        <div class="inner">
+
+            <!-- Header -->
+            <header id="header">
+                <a href="" class="logo">Documentation</a>
+            </header>
+
+            <!-- Content -->
+            <section>
+                <h2>Overview</h2>
+                <p>The hierarchical documentation documents how to build many of the functionalities found in the AR
+                    Tour.</p>
+
+                <h2>Getting Started - Project Creation and Environment Configuration</h2>
+
+                <h3>Creating the project</h3>
+                <p>ARKit projects requires Xcode 9.0 and above.</p>
+                <ol>
+                    <li>Launch Xcode and select <b>Create a new Xcode project</b> from the Xcode welcome screen, or
+                        select
+                        <b>File
+                            → New → Project...</b></li>
+                    <li>Choose <b> iOS → Application → Augmented Reality App</b> and click next.<br><img
+                            src="../common-images/application-type-selection.png" width="70%"/></li>
+                    <li>In the <i>Choose options for your new project</i> dialog, choose <b>SceneKit</b> as the <i>Content
+                        Technology</i><img
+                            src="../common-images/scenekit.png" width="70%"/></li>
+                </ol>
+
+                <h3>Configuring Your Environment</h3>
+                <p>Creating a new ARKit project generates a sample application, so some cleanup is required.</p>
+                <ol>
+                    <li>In ViewController.swift, delete the sample code from <code>viewDidLoad()</code>.<br><img
+                            src="../common-images/viewDidLoad.png" width="70%"/></li>
+                    <li>Delete everything inside the art.scnassets folder. <br><img src="../common-images/art.png"
+                                                                                    width="70%"/></li>
+                </ol>
+
+                <h3>Creating an AR Session</h3>
+                <p><a href="https://developer.apple.com/documentation/arkit/arsession" target="_blank">ARSession</a> is
+                    an
+                    object shared by views that require motion tracking and image processing. Your application will use an <a
+                            href="https://developer.apple.com/documentation/arkit/arscnview">ARSCNView</a> to display 3D
+                    SceneKit objects in the camera view.</p>
+                <p>ARSession must be configured before it can be run by ARSCNView. To do this, create an instance of <a
+                        href="https://developer.apple.com/documentation/arkit/arworldtrackingconfiguration"
+                        target="_blank">ARWorldTrackingConfiguration</a>
+                    and configure it to detect horizontal planes. Then the SceneView can run the ARSession.</p>
+                <p>This configuration can be achieved by adding the following code to the <code>viewWillAppear()</code>
+                    method of your ViewController class.</p>
+
+                <pre><code>
+override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+
+    // Create a session configuration
+    let configuration = ARWorldTrackingConfiguration()
+
+    // Detect horizontal planes in the scene
+    configuration.planeDetection = .horizontal
+
+    // Run the view's session
+    sceneView.session.run(configuration)
+}
+            </code></pre>
+
+
+            </section>
+
+            <section>
+                <h2>Leaving an AR View</h2>
+                <p>If your application is more than just one ARSCNView, it may make sense to allow your user to escape the ARSCNView and go back to the previous view. There are <b>two</b> easy ways to do this:</p>
+                <h4>UINavigationController</h4>
+                <p>If your ARSCNView is the child of a UINavigationController, you can hide the bar and use UINavigationController's built-in "edge-pan to go back" gesture.</p>
+                <p>In your <code>viewDidLoad()</code> method, set the <code>interactivePopGestureRecognizer</code> Delegate to your ARViewController. This lets your ARSCNView pass edge-pad gestures to the view's NavigationController.</p>
+
+                <pre><code>
+override func viewDidLoad() {
+    ...
+  // Required for "swipe right to go back" gesture with a hidden navigation bar
+    navigationController?.interactivePopGestureRecognizer?.delegate = self
+    ...
+}
+        </code></pre>
+
+                <h3>Back Button</h3>
+                <p>A back button is familiar to all users. In order to prevent disrupting your user's experience, you'll only want to show it for a few seconds.</p>
+                <h4>Button Setup</h4>
+                <p>Call <code>setupBackButton()</code> in <code>viewWillAppear()</code> to create a back button and display it for a few seconds.</p>
+                <pre><code>
+    // Global reference to backButton
+    var backButton: UIImageView = UIImageView(image: UIImage(named: "back-icon"))
+
+    // Creates a back button and adds it to the scene
+    func setupBackButton() {
+        // Position the button right under the status bar
+        backButton.frame = CGRect(x: 25, y: 40, width: 35, height: 35)
+        view.addSubview(backButton)
+
+        // Fade out the back button after a few seconds.
+        UIView.animateKeyframes(withDuration: 1.0, delay: 6.0, options: .allowUserInteraction, animations: {
+            self.backButton.alpha = 0
+        }, completion: { (finished: Bool) in
+            self.backButton.isHidden = true
+        })
+    }
+                </code></pre>
+
+                <h4>Handling Touch Gestures</h4>
+                <p>You will likely be using hit tests (as learned in the <a href="../models-and-physics/tutorial.html">models and physics</a> tutorial to determine if the user tapped an object in the scene. Rather than adding a TapGestureRecognizer to our back button and overcomplicating the way our application handles tap gestures, we can add our back button logic to our ARSCNView's tap gesture handling method. </p>
+                <pre><code>
+    @IBAction func userTappedScreen(_ sender: UITapGestureRecognizer) {
+        let screenTapPoint: CGPoint = sender.location(in: self.view)
+
+        if backButton.frame.contains(screenTapPoint) && !backButton.isHidden {
+            navigationController?.popViewController(animated: true)
+            return
+        }
+        ...
+     }
+                </code></pre>
+
+        </section>
+
+        </div>
+    </div>
+    <div id="side">
+        <!-- Sidebar -->
+        <div class="inner">
+
+            <!-- Menu -->
+            <nav id="menu">
+                <header class="major">
+                    <h2>Menu</h2>
+                </header>
+                <ul>
+                    <li><a href="../../index.html">Home</a></li>
+                    <li><a href="../../arkit-samples.html">Sample Applications</a></li>
+                </ul>
+                <br/>
+                <section>
+                    <header class="major">
+                        <h2 style="margin-bottom: 10px;">Tutorials</h2>
+                    </header>
+                    <nav>
+                        <ul>
+                            <li><a href="../arkit-hello-world/tutorial.html" target="_blank">Hello World</a></li>
+                            <li><a href="../models-and-physics/tutorial.html" target="_blank">SceneKit Models and
+                                Physics</a></li>
+                        </ul>
+                    </nav>
+                </section>
+                <br/>
+                <section>
+                    <header class="major">
+                        <h2 style="margin-bottom: 10px;">Semester Project</h2>
+                    </header>
+                    <nav>
+                        <ul>
+                            <li><a href="/literature-review-site/tutorials/documentation/documentation.html">Documentation</a></li>
+                        </ul>
+                    </nav>
+                </section>
+            </nav>
+
+
+            <!-- Footer -->
+            <footer id="footer">
+                <p class="copyright">&copy; Patrick Gatewood. All rights reserved. Design: <a
+                        href="https://html5up.net">HTML5
+                    UP</a>.</p>
+            </footer>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- Scripts -->
+<script src="assets/js/jquery.min.js"></script>
+<script src="assets/js/skel.min.js"></script>
+<script src="assets/js/util.js"></script>
+<!--[if lte IE 8]>
+<script src="../../assets/js/ie/respond.min.js"></script><![endif]-->
+<script src="assets/js/main.js"></script>
+
+<script src="assets/js/main.js"></script>
+
+</body>
+</html>
