@@ -346,9 +346,18 @@ func distanceBetweenPointsInMiles(lat1: Double, long1: Double, lat2: Double, lon
                 </code></pre>
 
                 <h3>Processing Buildings - Creating Building Label Nodes</h3>
-                <p>Once we've computed a building's distance from the user, we create a SCNNode containing the
-                    building's name. Later, we will add this node to the scene.</p>
-                <img src="images/create-building-label-node-highlight.png" width="800"/>
+                <div class="row">
+                    <div class="column">
+                        <p>Once we've computed a building's distance from the user, we create a SCNNode containing the
+                            building's name. Later, we will add this node to the scene.</p>
+                        <img src="images/create-building-label-node-highlight.png" width="120%"/>
+                    </div>
+                    <div class="column" align="center">
+                        <div>
+                            <img src="images/building-label-node.jpeg" width="50%"/>
+                        </div>
+                    </div>
+                </div>
                 <p><code>createBuildingLabelNode()</code> creates a SCNNode that displays the building's name. This
                     takes a few steps:</p>
                 <ol>
@@ -422,6 +431,21 @@ func getBearingBetweenPoints(point1 : CLLocation, point2 : CLLocation) -> Double
                 </code></pre>
 
                 <p>Steps 2 and 3 are self-explanatory and can be tailored to your own application as you wish.</p>
+                <p>Finally, after all that math, the building label node has been created! Later, we will discuss adding the node to the scene. </p>
+
+                <hr />
+                <h3>Processing Buildings - Creating Building Detail Nodes</h3>
+                <div class="row">
+                    <div class="column">
+                        <p>When the user is close to a building, we render a SCNNode that contains a BuildingDetailsView.</p>
+                        <img src="images/process-building-details-node.png" width="120%"/>
+                    </div>
+                    <div class="column" align="center">
+                        <div>
+                            <img src="images/building-detail-node.jpeg" width="50%"/>
+                        </div>
+                    </div>
+                </div>
 
             </section>
 
