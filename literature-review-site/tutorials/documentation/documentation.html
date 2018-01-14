@@ -117,7 +117,8 @@ override func viewWillAppear(_ animated: Bool) {
                 <p>Recall that an ARSCNView contains a SceneKit scene. All SceneKit scenes contain a <code>overlaySKScene</code>,
                     perfect for overlaying 2D SpriteKit content. It's commonly used in game development to implement
                     heads-up displays, but can just as easily be used to create overlay labels.</p>
-                <p>Create your <code>overlaySKScene</code> in your <code>viewDidLoad()</code> method. You'll want to fade this overlay in and out. Creation and animation are discussed below.</p>
+                <p>Create your <code>overlaySKScene</code> in your <code>viewDidLoad()</code> method. You'll want to
+                    fade this overlay in and out. Creation and animation are discussed below.</p>
                 <pre><code>
     override func viewDidLoad() {
         ...
@@ -128,7 +129,8 @@ override func viewWillAppear(_ animated: Bool) {
                 </code></pre>
 
                 <h3>Creating the Overlay</h3>
-                <p>This function returns an SKScene which contains a SKLabelNode that wraps the string <code>withText</code>, similar to the one shown above.</p>
+                <p>This function returns an SKScene which contains a SKLabelNode that wraps the string
+                    <code>withText</code>, similar to the one shown above.</p>
                 <pre><code>
 
     // Creates an overlay containing a label with hint text and a translucent background
@@ -165,7 +167,9 @@ override func viewWillAppear(_ animated: Bool) {
                 </code></pre>
 
                 <h3>Displaying the Overlay</h3>
-                <p>Animating hints makes your app look more polished, and it makes displaying hints less jarring to the user. This function fades in a SKNode, displays it for <code>displayDuration</code> seconds. This function can be reused with any SKNode, not just an overlay.</p>
+                <p>Animating hints makes your app look more polished, and it makes displaying hints less jarring to the
+                    user. This function fades in a SKNode, displays it for <code>displayDuration</code> seconds. This
+                    function can be reused with any SKNode, not just an overlay.</p>
 
                 <pre><code>
    func fadeNodeInAndOut(node: SKNode, initialDelay: Double, fadeInDuration: Double, displayDuration: Double, fadeOutDuration: Double) {
@@ -180,6 +184,91 @@ override func viewWillAppear(_ animated: Bool) {
             .fadeOut(withDuration: fadeOutDuration),
             .removeFromParent()]))
     }
+                </code></pre>
+
+            </section>
+
+            <section>
+                <h2>Location-Based AR</h2>
+                <div class="row">
+                    <div class="column">
+                        <p>VT AR Tour pulls lat/long coordinates from an API and translates them into a local coordinate
+                            system in order to render objects at their "real" positions in the virtual coordinate
+                            system. This processing is very tricky, but if done correctly, objects can be rendered in
+                            their real-world locations with a surprising level of accuracy!</p>
+                    </div>
+                    <div class="column" align="center">
+                        <div>
+                            <img src="../../images/ar-map.jpeg" width="45%"/>
+                            <img src="../../images/vt-ar-tour.gif" width="45%"/>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Getting the User's Location</h3>
+                <p>A location-based AR App needs the highest degree of accuracy in order to correctly map real-world
+                    coordinates to virtual ones. First get permission from the user, then configure the
+                    CoreLocationManager to use the best accuracy possible.</p>
+                <p>Make sure you have a strong reference to CLLocationManager, then get permission and configure the
+                    location manger after the view has loaded.</p>
+                <pre><code>
+// A strong reference to CLLocationManager is required by the CoreLocation API
+var locationManager = CLLocationManager()
+
+override func viewDidLoad() {
+    ...
+    // User must enable location services to use this app
+    if !CLLocationManager.locationServicesEnabled() {
+        showAlertMessage(title: "Location Services Disabled", message: "You must enable location services to use this app")
+        return
+    }
+
+    // Get the user's location
+    locationManager.requestWhenInUseAuthorization()
+    getLocation()
+    ...
+}
+
+// Gets the user's location and reports all device movement
+func getLocation() {
+    // The user has not authorized location monitoring
+    if (CLLocationManager.authorizationStatus() == .denied) {
+        showAlertMessage(title: "App Not Authorized", message: "Unable to determine your location: please allow VT AR Tour to use your location.")
+
+        // Try to get location authorization again
+        locationManager.requestWhenInUseAuthorization()
+    }
+
+    locationManager.delegate = self
+
+    // Report ALL device movement
+    locationManager.distanceFilter = kCLDistanceFilterNone
+
+    // Get the highest possible degree of accuracy
+    locationManager.desiredAccuracy = kCLLocationAccuracyBest
+
+    locationManager.startUpdatingLocation()
+    locationManager.startUpdatingHeading()
+}
+                </code></pre>
+
+                <h3>Setting up Your Coordinate System</h3>
+                <p>When an ARSession is launched, the AR coordinate system is based on the angle of the camera upon
+                    launch by default. Luckily, ARKit can base the coordinate system on gravity and the compass heading
+                    for a more real-world-like coordinate system.</p>
+                <p>When you create your <code>ARWorldTrackingConfiguration</code>, be sure to correctly set the world
+                    alignment.</p>
+                <pre><code>
+override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    let configuration = ARWorldTrackingConfiguration()
+
+    // Defines the ARSession's coordinate system based on gravity and the compass heading in the device. Note: THIS IS CRITICALLY IMPORTANT for location-based AR applications
+    configuration.worldAlignment = .gravityAndHeading
+    ...
+    // Run the view's session
+    sceneView.session.run(configuration)
+}
                 </code></pre>
 
             </section>
