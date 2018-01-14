@@ -345,6 +345,19 @@ func distanceBetweenPointsInMiles(lat1: Double, long1: Double, lat2: Double, lon
 }
                 </code></pre>
 
+                <h3>Processing Buildings - Creating Building Label Nodes</h3>
+                <p>Once we've computed a building's distance from the user, we create a SCNNode containing the
+                    building's name. Later, we will add this node to the scene.</p>
+                <img src="images/create-building-label-node-highlight.png" width="800"/>
+                <p><code>createBuildingLabelNode()</code> creates a SCNNode that displays the building's name. This takes a few steps:</p>
+                <ol>
+                    <li style="color: rgb(238, 64, 38)">Call <code>getARCoordinateOfBuilding()</code>, which translates the building's
+                    real-world coordinates to its corresponding AR coordinates. </li>
+                    <li style="color:rgb(0, 63, 245)">Get the (x, y, z) coordinates from the matrix's 3rd column (column 3 represents the node's position in 3D space) and wrap the coordinates into a SCNVector3. SCNNode expects a SCNVector3 type in order to set its position.</li>
+                    <li style="color: rgb(111, 243, 74)">Set the node's properties.</li>
+                </ol>
+                <p>These tasks are nontrivial, so each will be discussed in detail below. The numerical labels that follow correspond the the numbers above.  </p>
+                <img src="images/create-building-label-node.png" width="800"/>
 
             </section>
 
