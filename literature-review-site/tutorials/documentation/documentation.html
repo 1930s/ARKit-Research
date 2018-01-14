@@ -271,6 +271,81 @@ override func viewWillAppear(_ animated: Bool) {
 }
                 </code></pre>
 
+                <h3>Handling Location Updates</h3>
+                <p>As the user moves around, the LocationManager will notify your application with location updates. You
+                    should update the location of each object in the scene every time this method is called. Here, those
+                    updates are handled in <code>processBuilding()</code>.</p>
+                <pre><code>
+// New location data is available
+func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    //  Must wait until at least one heading update comes through. If we proceed before this, our coordinate system won't be set up correctly
+    guard (manager.heading?.magneticHeading) != nil else { return }
+
+    // Don't process any further without the user's current location
+    guard let currentLocation: CLLocation = locations.last else { return }
+
+    // Fetch the VT Buildings JSON if necessary
+    if jsonInDocumentDirectory == nil {
+        jsonInDocumentDirectory = getVTBuildingsJSON()
+    }
+
+    if let jsonDataFromApi = jsonInDocumentDirectory {
+        // Getting the JSON was successful
+        do {
+            let jsonArray = try JSONSerialization.jsonObject(with: jsonDataFromApi, options: .mutableContainers) as! NSArray
+
+            for building in jsonArray {
+                // Update the location and appearance of each buildingNode as necessary
+                processBuilding(building, currentLocation)
+            }
+        } catch let error as NSError {
+            showAlertMessage(title: "Error in JSON serialization", message: error.localizedDescription)
+        }
+    }
+}
+                </code></pre>
+
+                <hr/>
+                <h2>Processing Buildings</h2>
+                <p>We create and render building nodes the first time we receive a location update. Afterwards, we
+                    update the position and appearance of the building nodes with each location update.</p>
+                <p>The rest of this section will focus on each step of processing, updating, and rendering
+                    buildings.</p>
+                <br/>
+                <h3>Processing Buildings - Computing the Distance Between Coordinates</h3>
+                <p>First, we determine if the building is close enough to the user to bother processing. If the building
+                    is more than a quarter mile from the user, we don't waste CPU cycles updating nodes that are too far
+                    for the user to see.</p>
+                <img src="images/compute-distance.png" width="800"/>
+                <p>The <code>distanceBetweenPointsInMiles()</code> function uses the <a
+                        href="https://en.wikipedia.org/wiki/Haversine_formula" target="_blank">Haversine Formula</a> to
+                    calculate the distance between two latitude/longitude points. Here, the points are the user's
+                    location and each building's location.</p>
+                <pre><code>
+// MARK: - Degrees <--> Radians conversion functions
+
+func degreesToRadians(_ degrees: Double) -> Double { return degrees * .pi / 180.0 }
+func radiansToDegrees(_ radians: Double) -> Double { return radians * 180.0 / .pi }
+
+// ----------------------------------------------
+// MARK: - Position math (lat/long; matrix, etc)
+// ----------------------------------------------
+
+// MARK: Haversine formula
+// Calculates the distance between two lat/long coordinates in miles.
+// Modified from https://gist.github.com/Jamonek/16ecda78cebcd0da5862
+func distanceBetweenPointsInMiles(lat1: Double, long1: Double, lat2: Double, long2: Double) -> Double {
+    let radius: Double = 3959.0 // Average radius of the Earth in miles
+    let deltaP = degreesToRadians(lat2) - degreesToRadians(lat1)
+    let deltaL = degreesToRadians(long2) - degreesToRadians(long1)
+    let a = sin(deltaP/2) * sin(deltaP/2) + cos(degreesToRadians(lat1)) * cos(degreesToRadians(lat2)) * sin(deltaL/2) * sin(deltaL/2)
+    let c = 2 * atan2(sqrt(a), sqrt(1-a))
+    let d = radius * c
+    return d
+}
+                </code></pre>
+
+
             </section>
 
             <section>
