@@ -545,12 +545,24 @@ func createBuildingDetailsViewControllerFromDict(buildingDict: NSMutableDictiona
                     later.</p>
 
                 <h4>Building Detail Nodes - What's Left?</h4>
-                <img src="images/populated-building-details-whats-left.png" width="80%" />
-                <p>The rest of this function is mostly configuration specific to this implementation. The most important line is highlighted. Here, we set the SCNPlane's first material to the BuildingDetailViewController's view. This whole configuration effectively renders a 2-dimensional View in our 3D ARSCNView.</p>
-                <hr />
+                <img src="images/populated-building-details-whats-left.png" width="80%"/>
+                <p>The rest of this function is mostly configuration specific to this implementation. The most important
+                    line is highlighted. Here, we set the SCNPlane's first material to the
+                    BuildingDetailViewController's view. This whole configuration effectively renders a 2-dimensional
+                    View in our 3D ARSCNView.</p>
+                <hr/>
                 <h3>Processing Buildings - Adding Nodes to the Scene</h3>
-                <p>The two long sections above described creating the different types of nodes to be rendered in the scene. This section will discuss adding the nodes to the scene and the logic used to determine which node to display.</p>
-
+                <p>The two long sections above described creating the different types of nodes to be rendered in the
+                    scene. This section will discuss adding the nodes to the scene and the logic used to determine which
+                    node to display.</p>
+                <img src="images/process-building-end.png" width="80%"/>
+                <p>Finally, we're ready to add nodes to the scene. First, we check if the nodes are already in the
+                    scene. If not, we add them. This handles initially adding nodes to the scene on launch. In addition,
+                    it allows the app to add new nodes for buildings that were once too far away. So, if the user starts
+                    walking across campus, the app will dynamically render new buildings as they come within range.</p>
+                <img src="images/process-building-end-2.png" width="80%"/>
+                <p>These checks determine whether to display a Building Label node vs. a Building Details node. If the user is within range, the building label node is rendered. Otherwise, the label is rendered.</p>
+                <p>With that, processing buildings is complete! In order for the nodes to maintain a high level of location accuracy, this is done with every location update. Further optimizations are always possible, however ruling out far-away buildings is enough to make the app run smoothly.git s</p>
 
             </section>
 
