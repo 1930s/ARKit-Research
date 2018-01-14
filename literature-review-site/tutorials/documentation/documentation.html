@@ -439,7 +439,11 @@ func getBearingBetweenPoints(point1 : CLLocation, point2 : CLLocation) -> Double
                 <div class="row">
                     <div class="column">
                         <p>When the user is close to a building, we render a SCNNode that contains a
-                            BuildingDetailsView.</p>
+                            BuildingDetailsView. The BuildingDetailsNode is a SCNNode that contains a
+                            BuildingDetailsView. This view is exactly
+                            the same as the one that is shown to the user when the user taps on a building name to view
+                            the
+                            building details.</p>
                         <img src="images/process-building-details-node.png" width="150%"/>
                     </div>
                     <div class="column" align="right">
@@ -448,14 +452,17 @@ func getBearingBetweenPoints(point1 : CLLocation, point2 : CLLocation) -> Double
                         </div>
                     </div>
                 </div>
-                    <p>The BuildingDetailsNode is a SCNNode that contains a BuildingDetailsView. This view is exactly
-                        the same as the one that is shown to the user when the user taps on a building name to view the
-                        building details.</p>
-                    <p>First, we create the BuildingDetails xib and the BuildingDetailsViewController. The BuildingDetails view is described by a xib file in order to be reusable both in BuildingDetails nodes and the BuildingDetailsView.</p>
+                <br/>
+                <p>Creating the populated BuildingDetailsSCNNode takes a few steps.</p>
+                <img src="images/building-details-scn-node-step-1.png" width="80%"/>
+                <h3>createBuildingDetailsViewControllerFromDict()</h3>
+                <p>First, we create the BuildingDetails xib and the BuildingDetailsViewController. The BuildingDetails
+                    view is described by a xib file in order to be reusable both in BuildingDetails nodes and the
+                    BuildingDetailsView.</p>
 
                 <div class="row">
                     <div class="column">
-                        <img src="images/building-details-xib.png" width = 100% />
+                        <img src="images/building-details-xib.png" width=100%/>
                     </div>
                     <div class="column">
                         <pre><code>
@@ -499,8 +506,50 @@ class BuildingDetailsViewController: UIViewController {
                         </code></pre>
                     </div>
                 </div>
-                <p>It is worth noting here that the BuildingDetailsViewController defines its own protocol. This allows its delegate to handle removing the ViewController from its parent, as that functionality is not supported without delegation. The implementation in <code>ARViewController.swift</code> simply animates out the ViewController's view and removes the ViewController from itself on completion.</p>
+                <p>It is worth noting here that the BuildingDetailsViewController defines its own protocol. This allows
+                    its delegate to handle removing the ViewController from its parent, as that functionality is not
+                    supported without delegation. The implementation in <code>ARViewController.swift</code> simply
+                    animates out the ViewController's view and removes the ViewController from itself on completion.</p>
+                <p>Once we've created the ViewController, we simply populate its view with data from a Building
+                    dictionary. This gives us the full implementation of
+                    createBuildingDetailsViewControllerFromDict().</p>
+                <pre><code>
+// Create a BuildingDetailsController and populate it asynchronously with data from the API
+func createBuildingDetailsViewControllerFromDict(buildingDict: NSMutableDictionary?) -> BuildingDetailsViewController {
+    // Create a new ViewController and pass it the selected building's data
+    let buildingDetailViewController = BuildingDetailsViewController.init(nibName: "BuildingDetails", bundle: nil)
+    buildingDetailViewController.delegate = self
 
+    // NOTE: ViewController.view must be referenced at least once before referencing ANY IBOutlets in the ViewController. Referencing the `view` property implicity calls loadView(), which should never be called directly by the programmer.
+    let _: UIView! = buildingDetailViewController.view
+
+    // Display the building name
+    buildingDetailViewController.buildingNameLabel.text = buildingDict?.value(forKey: "name") as? String
+
+    // Get the building's image asynchronously and display it once available
+    if let imageAddress = buildingDict?.value(forKey: "imageUrl") as? String,
+        let buildingImageUrl = URL(string: imageAddress) {
+            downloadAndDisplayImageAsync(url: buildingImageUrl, imageView: buildingDetailViewController.buildingImageview)
+    }
+
+    // Get the building's description asynchronously and display it once available
+    if let descriptionAddress = buildingDict?.value(forKey: "descriptionUrl") as? String,
+        let buildingDescriptionUrl = URL(string: descriptionAddress) {
+            downloadAndDisplayLabelTextAsync(url: buildingDescriptionUrl, label: buildingDetailViewController.buildingDescriptionLabel)
+    }
+
+    return buildingDetailViewController
+}
+                </code></pre>
+                <p>Note that downloading and displaying data from the API is done asynchronously. This will be discussed
+                    later.</p>
+
+                <h4>Building Detail Nodes - What's Left?</h4>
+                <img src="images/populated-building-details-whats-left.png" width="80%" />
+                <p>The rest of this function is mostly configuration specific to this implementation. The most important line is highlighted. Here, we set the SCNPlane's first material to the BuildingDetailViewController's view. This whole configuration effectively renders a 2-dimensional View in our 3D ARSCNView.</p>
+                <hr />
+                <h3>Processing Buildings - Adding Nodes to the Scene</h3>
+                <p>The two long sections above described creating the different types of nodes to be rendered in the scene. This section will discuss adding the nodes to the scene and the logic used to determine which node to display.</p>
 
 
             </section>
