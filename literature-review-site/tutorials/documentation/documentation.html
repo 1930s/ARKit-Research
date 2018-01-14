@@ -346,13 +346,13 @@ func distanceBetweenPointsInMiles(lat1: Double, long1: Double, lat2: Double, lon
                 </code></pre>
 
                 <h3>Processing Buildings - Creating Building Label Nodes</h3>
+                <p>Once we've computed a building's distance from the user, we create a SCNNode containing the
+                    building's name. Later, we will add this node to the scene.</p>
                 <div class="row">
                     <div class="column">
-                        <p>Once we've computed a building's distance from the user, we create a SCNNode containing the
-                            building's name. Later, we will add this node to the scene.</p>
-                        <img src="images/create-building-label-node-highlight.png" width="120%"/>
+                        <img src="images/create-building-label-node-highlight.png" width="150%"/>
                     </div>
-                    <div class="column" align="center">
+                    <div class="column" align="right">
                         <div>
                             <img src="images/building-label-node.jpeg" width="50%"/>
                         </div>
@@ -431,21 +431,77 @@ func getBearingBetweenPoints(point1 : CLLocation, point2 : CLLocation) -> Double
                 </code></pre>
 
                 <p>Steps 2 and 3 are self-explanatory and can be tailored to your own application as you wish.</p>
-                <p>Finally, after all that math, the building label node has been created! Later, we will discuss adding the node to the scene. </p>
+                <p>Finally, after all that math, the building label node has been created! Later, we will discuss adding
+                    the node to the scene. </p>
 
-                <hr />
+                <hr/>
                 <h3>Processing Buildings - Creating Building Detail Nodes</h3>
                 <div class="row">
                     <div class="column">
-                        <p>When the user is close to a building, we render a SCNNode that contains a BuildingDetailsView.</p>
-                        <img src="images/process-building-details-node.png" width="120%"/>
+                        <p>When the user is close to a building, we render a SCNNode that contains a
+                            BuildingDetailsView.</p>
+                        <img src="images/process-building-details-node.png" width="150%"/>
                     </div>
-                    <div class="column" align="center">
+                    <div class="column" align="right">
                         <div>
                             <img src="images/building-detail-node.jpeg" width="50%"/>
                         </div>
                     </div>
                 </div>
+                    <p>The BuildingDetailsNode is a SCNNode that contains a BuildingDetailsView. This view is exactly
+                        the same as the one that is shown to the user when the user taps on a building name to view the
+                        building details.</p>
+                    <p>First, we create the BuildingDetails xib and the BuildingDetailsViewController. The BuildingDetails view is described by a xib file in order to be reusable both in BuildingDetails nodes and the BuildingDetailsView.</p>
+
+                <div class="row">
+                    <div class="column">
+                        <img src="images/building-details-xib.png" width = 100% />
+                    </div>
+                    <div class="column">
+                        <pre><code>
+//
+//  BuildingDetailsViewController.swift
+//  VT AR Tour
+//
+//  Created by Patrick Gatewood on 11/21/17.
+//  Copyright © 2017 Patrick Gatewood. All rights reserved.
+//
+
+import UIKit
+
+protocol BuildingDetailsDelegate {
+    func closeBuildingDetailsView(viewController: UIViewController)
+}
+
+class BuildingDetailsViewController: UIViewController {
+
+    @IBOutlet var buildingNameLabel: UILabel!
+    @IBOutlet var buildingImageview: UIImageView!
+    @IBOutlet var scrollView: UIScrollView!
+    @IBOutlet var buildingDescriptionLabel: UILabel!
+    @IBOutlet var closeButton: UIButton!
+
+    var delegate: BuildingDetailsDelegate?
+
+    // Closes the BuildingDetailsView
+    @IBAction func close(_ sender: UIButton) {
+        if let buildingDetailsDelegate = delegate {
+            buildingDetailsDelegate.closeBuildingDetailsView(viewController: self)
+        }
+    }
+
+    // Give the view rounded corners
+    override func viewDidLoad() {
+        view.layer.cornerRadius = 20;
+        view.layer.masksToBounds = true;
+    }
+}
+                        </code></pre>
+                    </div>
+                </div>
+                <p>It is worth noting here that the BuildingDetailsViewController defines its own protocol. This allows its delegate to handle removing the ViewController from its parent, as that functionality is not supported without delegation. The implementation in <code>ARViewController.swift</code> simply animates out the ViewController's view and removes the ViewController from itself on completion.</p>
+
+
 
             </section>
 
