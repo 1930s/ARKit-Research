@@ -561,9 +561,42 @@ func createBuildingDetailsViewControllerFromDict(buildingDict: NSMutableDictiona
                     it allows the app to add new nodes for buildings that were once too far away. So, if the user starts
                     walking across campus, the app will dynamically render new buildings as they come within range.</p>
                 <img src="images/process-building-end-2.png" width="80%"/>
-                <p>These checks determine whether to display a Building Label node vs. a Building Details node. If the user is within range, the building label node is rendered. Otherwise, the label is rendered.</p>
-                <p>With that, processing buildings is complete! In order for the nodes to maintain a high level of location accuracy, this is done with every location update. Further optimizations are always possible, however ruling out far-away buildings is enough to make the app run smoothly.git s</p>
+                <p>These checks determine whether to display a Building Label node vs. a Building Details node. If the
+                    user is within range, the building label node is rendered. Otherwise, the label is rendered.</p>
+                <p>With that, processing buildings is complete! In order for the nodes to maintain a high level of
+                    location accuracy, this is done with every location update. Further optimizations are always
+                    possible, however ruling out far-away buildings is enough to make the app run smoothly.git s</p>
 
+            </section>
+
+            <section>
+                <h2>Asynchronous Data Downloading</h2>
+                <p>Earlier, when creating a building details view, we downloaded and displayed building images and their
+                    descriptions asynchronously in order to not hang the main thread. Otherwise, the application would
+                    completely freeze while waiting for a potentially large image to download!</p>
+                <p>To prevent this, we use an <a
+                        href="https://developer.apple.com/library/content/documentation/Swift/Conceptual/Swift_Programming_Language/Closures.html#//apple_ref/doc/uid/TP40014097-CH11-ID546"
+                        target="_blank">escaped closure</a>. This technique allows a closure to be passed into a
+                    function as a parameter, but not executed until the function completes. We use this strategy to show
+                    a loading indicator in the UI, download the contents of a url, and populate the UI on completion.
+                </p>
+                <h3>Showing the Loading Indicator</h3>
+                <p>This function can show a loading indicator in the center of any subclass of UIView.</p>
+                <pre><code>
+// Create loading indicator and add it to the passed in view
+func createAndShowLoadingIndicator(addToView: UIView) -> UIActivityIndicatorView {
+    let loadingIndicator = UIActivityIndicatorView()
+
+    // Add the loading indicator at the center of the view and begin the loading animation
+    loadingIndicator.center = CGPoint(x: addToView.frame.size.width  / 2,
+                                      y: addToView.frame.size.height / 2);
+    addToView.addSubview(loadingIndicator)
+    loadingIndicator.startAnimating()
+
+    return loadingIndicator
+}
+                </code></pre>
+                <h3>Downloading and Displaying Data</h3>
             </section>
 
             <section>
