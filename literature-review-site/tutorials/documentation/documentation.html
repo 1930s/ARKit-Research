@@ -39,11 +39,62 @@
                 <h2>Overview</h2>
                 <p>The hierarchical documentation documents how to build many of the functionalities found in the AR
                     Tour.</p>
+
+                <h2>Contents</h2>
+                <ul class="no-before">
+                    <li><h3><a href="#getting-started">Getting Started</a></h3></li>
+                    <li>
+                        <ul class="no-before">
+                            <li><a href="#creating-project">Creating the Project</a></li>
+                            <li><a href="#configuring-environment">Configuring Your Environment</a></li>
+                            <li><a href="#create-ar-session">Creating an AR Session</a></li>
+                        </ul>
+                    </li>
+                    <li><h3><a href="#contextual-hints">Contextual Hints</a></h3></li>
+                    <li>
+                        <ul class="no-before">
+                            <li><a href="#creating-overlay-hint">Creating an Overlay Hint</a></li>
+                            <li><a href="#making-overlay">Making the Overlay</a></li>
+                            <li><a href="#displaying-overlay">Displaying the Overlay</a></li>
+                        </ul>
+                    </li>
+                    <li><h3><a href="#location-based-ar">Location-Based AR</a></h3></li>
+                    <li>
+                        <ul class="no-before">
+                            <li><a href="#getting-user-location">Getting the User's Location</a></li>
+                            <li><a href="#setting-up-coord-sys">Setting up Your Coordinate System</a></li>
+                            <li><a href="#handling-location-updates">Handling Location Updates</a></li>
+                        </ul>
+                    </li>
+                    <li><h3><a href="#processing-buildings">Processing Buildings</a></h3></li>
+                    <li>
+                        <ul class="no-before">
+                            <li><a href="#computing-distance">Computing the Distance Between Coordinates</a></li>
+                            <li><a href="#creating-label-nodes">Creating Building Label Nodes</a></li>
+                            <li><a href="#creating-building-detail-nodes">Creating Building Detail Nodes</a></li>
+                            <li><a href="#adding-nodes-to-scene">Adding Nodes to the Scene</a></li>
+                        </ul>
+                    </li>
+                    <li><h3><a href="#async-data-download">Asynchronous Data Downloading</a></h3></li>
+                    <li>
+                        <ul class="no-before">
+                            <li><a href="#showing-loading-indicator">Showing the Loading Indicator</a></li>
+                            <li><a href="#download-and-display-data">Downloading and Displaying Data</a></li>
+                        </ul>
+                    </li>
+                    <li><h3><a href="#leaving-ar">Leaving an AR View</a></h3></li>
+                    <li>
+                        <ul class="no-before">
+                            <li><a href="#back-button">Option 1: Back Button</a></li>
+                            <li><a href="#ui-navigation-controller">Option 2: UINavigationController</a></li>
+                        </ul>
+                    </li>
+                </ul>
             </section>
 
             <section>
-                <h2>Getting Started - Project Creation and Environment Configuration</h2>
-                <h3>Creating the project</h3>
+                <h2 id="getting-started">Getting Started - Project Creation and Environment Configuration</h2>
+                <h3 id="creating-project">Creating the project</h3>
                 <p>ARKit projects requires Xcode 9.0 and above.</p>
                 <ol>
                     <li>Launch Xcode and select <b>Create a new Xcode project</b> from the Xcode welcome screen, or
@@ -57,7 +108,7 @@
                             src="../common-images/scenekit.png" width="70%"/></li>
                 </ol>
 
-                <h3>Configuring Your Environment</h3>
+                <h3 id="configuring-environment">Configuring Your Environment</h3>
                 <p>Creating a new ARKit project generates a sample application, so some cleanup is required.</p>
                 <ol>
                     <li>In ViewController.swift, delete the sample code from <code>viewDidLoad()</code>.<br><img
@@ -66,7 +117,7 @@
                                                                                     width="70%"/></li>
                 </ol>
 
-                <h3>Creating an AR Session</h3>
+                <h3 id="create-ar-session">Creating an AR Session</h3>
                 <p><a href="https://developer.apple.com/documentation/arkit/arsession" target="_blank">ARSession</a> is
                     an
                     object shared by views that require motion tracking and image processing. Your application will use
@@ -95,11 +146,11 @@ override func viewWillAppear(_ animated: Bool) {
 }
             </code></pre>
 
-
+                <a href="#">Back to top</a>
             </section>
 
             <section>
-                <h2>Contextual Hints</h2>
+                <h2 id="contextual-hints">Contextual Hints</h2>
                 <div class="row">
                     <div class="column">
                         <p>Displaying help messages and hints in AR/VR is difficult to do without disrupting the user's
@@ -113,7 +164,7 @@ override func viewWillAppear(_ animated: Bool) {
                     </div>
                 </div>
 
-                <h3>Creating an Overlay Hint</h3>
+                <h3 id="creating-overlay-hint">Creating an Overlay Hint</h3>
                 <p>Recall that an ARSCNView contains a SceneKit scene. All SceneKit scenes contain a <code>overlaySKScene</code>,
                     perfect for overlaying 2D SpriteKit content. It's commonly used in game development to implement
                     heads-up displays, but can just as easily be used to create overlay labels.</p>
@@ -128,7 +179,7 @@ override func viewWillAppear(_ animated: Bool) {
     }
                 </code></pre>
 
-                <h3>Creating the Overlay</h3>
+                <h3 id="making-overlay">Making the Overlay</h3>
                 <p>This function returns an SKScene which contains a SKLabelNode that wraps the string
                     <code>withText</code>, similar to the one shown above.</p>
                 <pre><code>
@@ -166,7 +217,7 @@ override func viewWillAppear(_ animated: Bool) {
     }
                 </code></pre>
 
-                <h3>Displaying the Overlay</h3>
+                <h3 id="displaying-overlay">Displaying the Overlay</h3>
                 <p>Animating hints makes your app look more polished, and it makes displaying hints less jarring to the
                     user. This function fades in a SKNode, displays it for <code>displayDuration</code> seconds. This
                     function can be reused with any SKNode, not just an overlay.</p>
@@ -186,10 +237,11 @@ override func viewWillAppear(_ animated: Bool) {
     }
                 </code></pre>
 
+                <a href="#">Back to top</a>
             </section>
 
             <section>
-                <h2>Location-Based AR</h2>
+                <h2 id="location-based-ar">Location-Based AR</h2>
                 <div class="row">
                     <div class="column">
                         <p>VT AR Tour pulls lat/long coordinates from an API and translates them into a local coordinate
@@ -205,7 +257,7 @@ override func viewWillAppear(_ animated: Bool) {
                     </div>
                 </div>
 
-                <h3>Getting the User's Location</h3>
+                <h3 id="getting-user-location">Getting the User's Location</h3>
                 <p>A location-based AR App needs the highest degree of accuracy in order to correctly map real-world
                     coordinates to virtual ones. First get permission from the user, then configure the
                     CoreLocationManager to use the best accuracy possible.</p>
@@ -252,7 +304,7 @@ func getLocation() {
 }
                 </code></pre>
 
-                <h3>Setting up Your Coordinate System</h3>
+                <h3 id="setting-up-coord-sys">Setting up Your Coordinate System</h3>
                 <p>When an ARSession is launched, the AR coordinate system is based on the angle of the camera upon
                     launch by default. Luckily, ARKit can base the coordinate system on gravity and the compass heading
                     for a more real-world-like coordinate system.</p>
@@ -271,7 +323,7 @@ override func viewWillAppear(_ animated: Bool) {
 }
                 </code></pre>
 
-                <h3>Handling Location Updates</h3>
+                <h3 id="handling-location-updates">Handling Location Updates</h3>
                 <p>As the user moves around, the LocationManager will notify your application with location updates. You
                     should update the location of each object in the scene every time this method is called. Here, those
                     updates are handled in <code>processBuilding()</code>.</p>
@@ -306,13 +358,13 @@ func locationManager(_ manager: CLLocationManager, didUpdateLocations locations:
                 </code></pre>
 
                 <hr/>
-                <h2>Processing Buildings</h2>
+                <h2 id="processing-buildings"">Processing Buildings</h2>
                 <p>We create and render building nodes the first time we receive a location update. Afterwards, we
                     update the position and appearance of the building nodes with each location update.</p>
                 <p>The rest of this section will focus on each step of processing, updating, and rendering
                     buildings.</p>
                 <br/>
-                <h3>Processing Buildings - Computing the Distance Between Coordinates</h3>
+                <h3 id="computing-distance">Processing Buildings - Computing the Distance Between Coordinates</h3>
                 <p>First, we determine if the building is close enough to the user to bother processing. If the building
                     is more than a quarter mile from the user, we don't waste CPU cycles updating nodes that are too far
                     for the user to see.</p>
@@ -345,7 +397,7 @@ func distanceBetweenPointsInMiles(lat1: Double, long1: Double, lat2: Double, lon
 }
                 </code></pre>
 
-                <h3>Processing Buildings - Creating Building Label Nodes</h3>
+                <h3 id="creating-label-nodes">Processing Buildings - Creating Building Label Nodes</h3>
                 <p>Once we've computed a building's distance from the user, we create a SCNNode containing the
                     building's name. Later, we will add this node to the scene.</p>
                 <div class="row">
@@ -435,7 +487,7 @@ func getBearingBetweenPoints(point1 : CLLocation, point2 : CLLocation) -> Double
                     the node to the scene. </p>
 
                 <hr/>
-                <h3>Processing Buildings - Creating Building Detail Nodes</h3>
+                <h3 id="creating-building-detail-nodes">Processing Buildings - Creating Building Detail Nodes</h3>
                 <div class="row">
                     <div class="column">
                         <p>When the user is close to a building, we render a SCNNode that contains a
@@ -551,7 +603,7 @@ func createBuildingDetailsViewControllerFromDict(buildingDict: NSMutableDictiona
                     BuildingDetailViewController's view. This whole configuration effectively renders a 2-dimensional
                     View in our 3D ARSCNView.</p>
                 <hr/>
-                <h3>Processing Buildings - Adding Nodes to the Scene</h3>
+                <h3 id="adding-nodes-to-scene">Processing Buildings - Adding Nodes to the Scene</h3>
                 <p>The two long sections above described creating the different types of nodes to be rendered in the
                     scene. This section will discuss adding the nodes to the scene and the logic used to determine which
                     node to display.</p>
@@ -567,10 +619,11 @@ func createBuildingDetailsViewControllerFromDict(buildingDict: NSMutableDictiona
                     location accuracy, this is done with every location update. Further optimizations are always
                     possible, however ruling out far-away buildings is enough to make the app run smoothly.git s</p>
 
+                <a href="#">Back to top</a>
             </section>
 
             <section>
-                <h2>Asynchronous Data Downloading</h2>
+                <h2 id="async-data-download">Asynchronous Data Downloading</h2>
                 <p>Earlier, when creating a building details view, we downloaded and displayed building images and their
                     descriptions asynchronously in order to not hang the main thread. Otherwise, the application would
                     completely freeze while waiting for a potentially large image to download!</p>
@@ -580,7 +633,7 @@ func createBuildingDetailsViewControllerFromDict(buildingDict: NSMutableDictiona
                     function as a parameter, but not executed until the function completes. We use this strategy to show
                     a loading indicator in the UI, download the contents of a url, and populate the UI on completion.
                 </p>
-                <h3>Showing the Loading Indicator</h3>
+                <h3 id="showing-loading-indicator">Showing the Loading Indicator</h3>
                 <p>This function can show a loading indicator in the center of any subclass of UIView.</p>
                 <pre><code>
 // Create loading indicator and add it to the passed in view
@@ -596,8 +649,10 @@ func createAndShowLoadingIndicator(addToView: UIView) -> UIActivityIndicatorView
     return loadingIndicator
 }
                 </code></pre>
-                <h3>Downloading and Displaying Data</h3>
-                <p>By abstracting out the completion handler into an escaped closure, this function can be reused anywhere that requires an API call. Again, this function simply downloads data from a URL and executes the <code>completion</code> closure once the data has been downloaded.</p>
+                <h3 id="download-and-display-data">Downloading and Displaying Data</h3>
+                <p>By abstracting out the completion handler into an escaped closure, this function can be reused
+                    anywhere that requires an API call. Again, this function simply downloads data from a URL and
+                    executes the <code>completion</code> closure once the data has been downloaded.</p>
                 <pre><code>
 // Downloads data on a background thread and executes the passed-in closure on completion
 func getDataFromUrlAsync(url: URL, completion: @escaping (Data?, URLResponse?, Error?) -> ()) {
@@ -651,10 +706,13 @@ func downloadAndDisplayImageAsync(url: URL, imageView: UIImageView) {
     }
 }
                 </code></pre>
+                <p>With that, data is downloaded asynchronously and doesn't slow down the GUI thread!</p>
+
+                <a href="#">Back to top</a>
             </section>
 
             <section>
-                <h2>Leaving an AR View</h2>
+                <h2 id="leaving-ar">Leaving an AR View</h2>
                 <div class="row">
                     <div class="column">
                         <p>If your application is more than just one ARSCNView, it may make sense to allow your user to
@@ -666,7 +724,7 @@ func downloadAndDisplayImageAsync(url: URL, imageView: UIImageView) {
                     </div>
                 </div>
 
-                <h3>Option 1: Back Button&nbsp;&nbsp;<i class="fa fa-mail-reply fa-2x"></i></h3>
+                <h3 id="back-button">Option 1: Back Button&nbsp;&nbsp;<i class="fa fa-mail-reply fa-2x"></i></h3>
                 <p>A back button is familiar to all users. In order to prevent disrupting your user's experience, you'll
                     only want to show it for a few seconds.</p>
                 <h4>Button Setup</h4>
@@ -732,7 +790,7 @@ func downloadAndDisplayImageAsync(url: URL, imageView: UIImageView) {
      }
                 </code></pre>
 
-                <h3>Option 2: UINavigationController</h3>
+                <h3 id="ui-navigation-controller">Option 2: UINavigationController</h3>
                 <p>If your ARSCNView is the child of a UINavigationController, you can hide the bar and use
                     UINavigationController's built-in "edge-pan to go back" gesture.</p>
                 <p>In your <code>viewDidLoad()</code> method, set the <code>interactivePopGestureRecognizer</code>
@@ -748,60 +806,12 @@ override func viewDidLoad() {
 }
         </code></pre>
 
+                <a href="#">Back to top</a>
             </section>
 
         </div>
     </div>
-    <div id="side">
-        <!-- Sidebar -->
-        <div class="inner">
 
-            <!-- Menu -->
-            <nav id="menu">
-                <header class="major">
-                    <h2>Menu</h2>
-                </header>
-                <ul>
-                    <li><a href="../../index.html">Home</a></li>
-                    <li><a href="../../arkit-samples.html">Sample Applications</a></li>
-                </ul>
-                <br/>
-                <section>
-                    <header class="major">
-                        <h2 style="margin-bottom: 10px;">Tutorials</h2>
-                    </header>
-                    <nav>
-                        <ul>
-                            <li><a href="../arkit-hello-world/tutorial.html" target="_blank">Hello World</a></li>
-                            <li><a href="../models-and-physics/tutorial.html" target="_blank">SceneKit Models and
-                                Physics</a></li>
-                        </ul>
-                    </nav>
-                </section>
-                <br/>
-                <section>
-                    <header class="major">
-                        <h2 style="margin-bottom: 10px;">Semester Project</h2>
-                    </header>
-                    <nav>
-                        <ul>
-                            <li><a href="/literature-review-site/tutorials/documentation/documentation.html">Documentation</a>
-                            </li>
-                        </ul>
-                    </nav>
-                </section>
-            </nav>
-
-
-            <!-- Footer -->
-            <footer id="footer">
-                <p class="copyright">&copy; Patrick Gatewood. All rights reserved. Design: <a
-                        href="https://html5up.net">HTML5
-                    UP</a>.</p>
-            </footer>
-
-        </div>
-    </div>
 </div>
 
 
