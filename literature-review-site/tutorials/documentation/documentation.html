@@ -597,6 +597,60 @@ func createAndShowLoadingIndicator(addToView: UIView) -> UIActivityIndicatorView
 }
                 </code></pre>
                 <h3>Downloading and Displaying Data</h3>
+                <p>By abstracting out the completion handler into an escaped closure, this function can be reused anywhere that requires an API call. Again, this function simply downloads data from a URL and executes the <code>completion</code> closure once the data has been downloaded.</p>
+                <pre><code>
+// Downloads data on a background thread and executes the passed-in closure on completion
+func getDataFromUrlAsync(url: URL, completion: @escaping (Data?, URLResponse?, Error?) -> ()) {
+    URLSession.shared.dataTask(with: url) { data, response, error in
+        completion(data, response, error)
+        }.resume()
+}
+                </code></pre>
+                <p>We reuse the above function for both downloading long strings and large images.</p>
+                <pre><code>
+// Download a String on a background thread and display it in the passed in UILabel once completed
+func downloadAndDisplayLabelTextAsync(url: URL, label: UILabel) {
+    var text: String?
+
+    // Download the text and display it on completion
+    getDataFromUrlAsync(url: url) { (data, response, error) in
+        if error != nil {
+            // Download failed
+            text = "No data found"
+        } else if let data = data {
+            text = String(data: data, encoding: .utf8)
+        }
+
+        // Display the label
+        DispatchQueue.main.async {
+            label.text = text
+        }
+    }
+}
+
+// Download an image on a background thread and display it in the passed in UIImageView once completed
+func downloadAndDisplayImageAsync(url: URL, imageView: UIImageView) {
+    var image: UIImage?
+    let loadingIndicator = createAndShowLoadingIndicator(addToView: imageView)
+
+    // Download the image and display it on completion
+    getDataFromUrlAsync(url: url) { (data, response, error) in
+        if error != nil {
+            // Download failed
+            image = UIImage(named: "no-image")
+        } else if let data = data {
+            image = UIImage(data: data)
+        }
+
+        // Display the image
+        DispatchQueue.main.async {
+            loadingIndicator.stopAnimating()
+            loadingIndicator.removeFromSuperview()
+            imageView.image = image
+        }
+    }
+}
+                </code></pre>
             </section>
 
             <section>
