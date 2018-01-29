@@ -6,4 +6,4 @@ An undergraduate research project exploring the capabilities of ARKit for the Vi
 Visit the [demo-apps](https://github.com/pg8wood/ARKit-Research/tree/master/demo-apps) folder to view the source code of the applications built in the tutorials on the website. Or, follow the tutorials and develop them yourself!
 
 ## Documentation
-View the full documentation at [http://research.patrickgatewood.com](research.patrickgatewood.com).
+View the full documentation at [research.patrickgatewood.com](http://research.patrickgatewood.com).
