@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "VTQuest/View Controllers/ARViewController.swift"
+            timestampString = "537824753.357234"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "22"
+            endingLineNumber = "22"
+            landmarkName = "ARViewController"
+            landmarkType = "3">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "variable initialization expression of VTQuest.ARViewController.vtBuildingsWSBaseUrl : Swift.String"
+                  moduleName = "VTQuest"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/PatrickGatewood/Desktop/VTQuest/VTQuest/View%20Controllers/ARViewController.swift"
+                  timestampString = "536544685.051849"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "18"
+                  endingLineNumber = "18"
+                  offsetFromSymbolStart = "8">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "VTQuest.ARViewController.vtBuildingsWSBaseUrl.getter : Swift.String"
+                  moduleName = "VTQuest"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/PatrickGatewood/Desktop/VTQuest/VTQuest/View%20Controllers/ARViewController.swift"
+                  timestampString = "536544685.053956"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "18"
+                  endingLineNumber = "18"
+                  offsetFromSymbolStart = "116">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "VTQuest.ARViewController.init(nibName: Swift.Optional&lt;Swift.String&gt;, bundle: Swift.Optional&lt;__ObjC.Bundle&gt;) -&gt; VTQuest.ARViewController"
+                  moduleName = "VTQuest"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/PatrickGatewood/Desktop/VTQuest/VTQuest/View%20Controllers/ARViewController.swift"
+                  timestampString = "536544685.058936"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "18"
+                  endingLineNumber = "18"
+                  offsetFromSymbolStart = "160">
+               </Location>
+               <Location
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "VTQuest.ARViewController.init(coder: __ObjC.NSCoder) -&gt; Swift.Optional&lt;VTQuest.ARViewController&gt;"
+                  moduleName = "VTQuest"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/PatrickGatewood/Desktop/VTQuest/VTQuest/View%20Controllers/ARViewController.swift"
+                  timestampString = "536544685.061377"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "18"
+                  endingLineNumber = "18"
+                  offsetFromSymbolStart = "116">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>
