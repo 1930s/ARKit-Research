@@ -23,11 +23,8 @@ Builds on the Hello World tutorial. Learn how to render a 3D SceneKit model in A
 * Detecting collision with SCNPhysicsBodies
 * Saving memory to optimize performance
 
-## Semester project: VTQuest-AR
+## Semester Project: VTQuest-AR
 VTQuest-AR serves as a companion app for the Virginia Tech campus. The app's  augmented reality experience overlays information about [VT Buildings](https://vt.edu/about/buildings.html). By pointing the camera at a building, the user can see additional information about what's in front of them. The building details will render in the building's actual physical location as the app translates the building's lat/long coordinates into localized coordinates in the ARSCNView.
 
-<img src="http://patrickgatewood.com/arkit-research/images/ar-map.jpeg" alt="Drawing" style="width: 400px;"/>
-<img src="http://patrickgatewood.com/arkit-research/images/vt-ar-tour.gif" alt="Drawing" style="width: 400px;"/>
-
 ## Documentation
-View the full documentation [here](http://patrickgatewood.com/arkit-research/research-intro.html).
+You can view the full documentation on the [research website](http://patrickgatewood.com/arkit-research/research-intro.html).
