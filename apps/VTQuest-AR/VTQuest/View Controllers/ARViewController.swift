@@ -214,8 +214,8 @@ class ARViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDe
         // Compute the distance between the user's current location and the building's location
         let distanceFromUserInMiles: Double = distanceBetweenPointsInMiles(lat1: currentLocation.coordinate.latitude, long1: currentLocation.coordinate.longitude, lat2: buildingLocation.coordinate.latitude, long2: buildingLocation.coordinate.longitude)
         
-        // Disregard buildings that are too far away to accurately display
-        if (distanceFromUserInMiles >= 0.25) {
+        // Disregard buildings that are too close or far to display accurately
+        if (distanceFromUserInMiles >= 0.25 || distanceFromUserInMiles <= 0.01) {
             return
         }
         
@@ -227,13 +227,10 @@ class ARViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDe
         dict_LabelNode_BuildingDict[labelNode.name!] = buildingDict
         
         // If the user is close to the building, create a BuildingDetailsView embedded in a SCNNode
-        let detailsMaxDistance = 0.1 // miles
+        let detailsMaxDistance = 0.095 // miles
+//        print("Distance of \(buildingDict["name"]!) from user: \(distanceFromUserInMiles) miles")
         var buildingDetailsPlaneNode: SCNNode? = nil
         let buildingDetailsNodeName = "\(labelNode.name!)-detailsNode"
-        if distanceFromUserInMiles <= detailsMaxDistance, let buildingDict: NSMutableDictionary = dict_LabelNode_BuildingDict[labelNode.name!] as? NSMutableDictionary {
-            buildingDetailsPlaneNode = createPopulatedBuildingDetailsSCNNode(buildingDict: buildingDict, anchor: labelNode.position)
-            buildingDetailsPlaneNode?.name = buildingDetailsNodeName
-        }
         
         // Check if the building label and the building details are already rendered in the scene
         let existingBuildingLabelNode = sceneView.scene.rootNode.childNode(withName: labelNode.name!, recursively: false)
@@ -243,15 +240,20 @@ class ARViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDe
         if (existingBuildingLabelNode == nil) {
             // Add the building label to the scene
             sceneView.scene.rootNode.addChildNode(labelNode)
-        } else if (existingBuildingDetailsNode == nil && buildingDetailsPlaneNode != nil) {
-            // User got closer: fade out the building name and fade in the building details
-            buildingDetailsPlaneNode!.opacity = 0
-            sceneView.scene.rootNode.addChildNode(buildingDetailsPlaneNode!)
-            crossFadeNodes(fadeInNode: buildingDetailsPlaneNode!, fadeOutNode: existingBuildingLabelNode!, duration: 1.0)
-        } else if distanceFromUserInMiles > detailsMaxDistance && existingBuildingLabelNode != nil && existingBuildingDetailsNode != nil {
-            // User moved away: fade out the building details and fade in the building name
-            crossFadeNodes(fadeInNode: existingBuildingLabelNode!, fadeOutNode: existingBuildingDetailsNode!, duration: 1.0)
+//            print("adding \(labelNode.name!) to the scene! number of nodes in the scene: \(sceneView.scene.rootNode.childNodes.count)")
+        } else if (existingBuildingDetailsNode == nil && distanceFromUserInMiles <= detailsMaxDistance) {
+                buildingDetailsPlaneNode = createPopulatedBuildingDetailsSCNNode(buildingDict: buildingDict, anchor: labelNode.position)
+                buildingDetailsPlaneNode!.name = buildingDetailsNodeName
+                // User got closer: fade out the building name and fade in the building details
+                buildingDetailsPlaneNode!.opacity = 0
+                sceneView.scene.rootNode.addChildNode(buildingDetailsPlaneNode!)
+                crossFadeNodes(fadeInNode: buildingDetailsPlaneNode!, fadeOutNode: existingBuildingLabelNode!, duration: 1.0)
+            print("Adding \(buildingDict["name"]!)-detailsNode to scene! \(distanceFromUserInMiles) miles away")
         }
+//        } else if distanceFromUserInMiles > detailsMaxDistance && existingBuildingLabelNode != nil && existingBuildingDetailsNode != nil {
+//            // User moved away: fade out the building details and fade in the building name
+//            crossFadeNodes(fadeInNode: existingBuildingLabelNode!, fadeOutNode: existingBuildingDetailsNode!, duration: 1.0)
+//        }
     }
     
     // MARK: - JSON Methods
@@ -459,7 +461,7 @@ class ARViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDe
         let plane: SCNPlane = SCNPlane()
         
         // Match the ViewController.view's corner radius to prevent rendering white corners
-        plane.cornerRadius = (buildingDetailViewController.view?.layer.cornerRadius)! / 4
+        plane.cornerRadius = (buildingDetailViewController.view!.layer.cornerRadius) / 4
         
         // Configure the plane
         plane.width = 50
@@ -504,7 +506,7 @@ class ARViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDe
     }
     
     // Create a BuildingDetailsController and populate it asynchronously with data from the API
-    func createBuildingDetailsViewControllerFromDict(buildingDict: NSMutableDictionary?) -> BuildingDetailsViewController {
+    func createBuildingDetailsViewControllerFromDict(buildingDict: NSMutableDictionary!) -> BuildingDetailsViewController {
         // Create a new ViewController and pass it the selected building's data
         let buildingDetailViewController = BuildingDetailsViewController.init(nibName: "BuildingDetails", bundle: nil)
         buildingDetailViewController.delegate = self
@@ -513,10 +515,10 @@ class ARViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDe
         let _: UIView! = buildingDetailViewController.view
         
         // Display the building name
-        buildingDetailViewController.buildingNameLabel.text = buildingDict?.value(forKey: "name") as? String
+        buildingDetailViewController.buildingNameLabel.text = buildingDict.value(forKey: "name") as? String
         
         // Get the building's image asynchronously and display it once available
-        if let imageAddress = buildingDict?.value(forKey: "imageUrl") as? String,
+        if let imageAddress = buildingDict.value(forKey: "imageUrl") as? String,
             let buildingImageUrl = URL(string: imageAddress) {
                 downloadAndDisplayImageAsync(url: buildingImageUrl, imageView: buildingDetailViewController.buildingImageview)
         }
