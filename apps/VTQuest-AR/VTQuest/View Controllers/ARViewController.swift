@@ -228,7 +228,6 @@ class ARViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDe
         
         // If the user is close to the building, create a BuildingDetailsView embedded in a SCNNode
         let detailsMaxDistance = 0.095 // miles
-//        print("Distance of \(buildingDict["name"]!) from user: \(distanceFromUserInMiles) miles")
         var buildingDetailsPlaneNode: SCNNode? = nil
         let buildingDetailsNodeName = "\(labelNode.name!)-detailsNode"
         
@@ -240,7 +239,6 @@ class ARViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDe
         if (existingBuildingLabelNode == nil) {
             // Add the building label to the scene
             sceneView.scene.rootNode.addChildNode(labelNode)
-//            print("adding \(labelNode.name!) to the scene! number of nodes in the scene: \(sceneView.scene.rootNode.childNodes.count)")
         } else if (existingBuildingDetailsNode == nil && distanceFromUserInMiles <= detailsMaxDistance) {
                 buildingDetailsPlaneNode = createPopulatedBuildingDetailsSCNNode(buildingDict: buildingDict, anchor: labelNode.position)
                 buildingDetailsPlaneNode!.name = buildingDetailsNodeName
@@ -249,11 +247,7 @@ class ARViewController: UIViewController, ARSCNViewDelegate, CLLocationManagerDe
                 sceneView.scene.rootNode.addChildNode(buildingDetailsPlaneNode!)
                 crossFadeNodes(fadeInNode: buildingDetailsPlaneNode!, fadeOutNode: existingBuildingLabelNode!, duration: 1.0)
             print("Adding \(buildingDict["name"]!)-detailsNode to scene! \(distanceFromUserInMiles) miles away")
-        }
-//        } else if distanceFromUserInMiles > detailsMaxDistance && existingBuildingLabelNode != nil && existingBuildingDetailsNode != nil {
-//            // User moved away: fade out the building details and fade in the building name
-//            crossFadeNodes(fadeInNode: existingBuildingLabelNode!, fadeOutNode: existingBuildingDetailsNode!, duration: 1.0)
-//        }
+        }   
     }
     
     // MARK: - JSON Methods
