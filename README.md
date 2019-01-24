@@ -7,7 +7,6 @@ The research comprises two tutorials, a semester-long project, and a [research w
 <br />
 <p align="center">
   <img src="https://patrickgatewood.com/images/vt-map.jpeg" width="200"/>
-  <span>       </span>  <!--GitHub doesn't respect margins or padding. Makeshift space-->
   <img src="https://patrickgatewood.com/images/vt-ar-tour.gif" width="200"/>
 </p>
 
