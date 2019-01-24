@@ -2,7 +2,14 @@
 
 An undergraduate research project exploring the capabilities of ARKit for the Virginia Tech Department of Computer Science.
 
-The research comprises two tutorials, a semester-long project, and a research website containing literature review and documentation of the semester project's features.
+The research comprises two tutorials, a semester-long project, and a [research website](https://patrickgatewood.com/arkit-research/research-intro.html) containing literature review and documentation of the semester project's features.
+
+<br />
+<p align="center">
+  <img src="https://patrickgatewood.com/images/vt-map.jpeg" width="200"/>
+  <span>       </span>  <!--GitHub doesn't respect margins or padding. Makeshift space-->
+  <img src="https://patrickgatewood.com/images/vt-ar-tour.gif" width="200"/>
+</p>
 
 ## Tutorials
 ### [Hello World](http://patrickgatewood.com/arkit-research/tutorials/arkit-hello-world/tutorial.html)
